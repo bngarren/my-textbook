@@ -7,6 +7,7 @@ import * as ROUTES from "../../constants/routes";
 import HomePage from "../HomePage";
 import NotesPage from "../NotesPage";
 import ViewNotePage from "../ViewNote";
+import SignInPage from "../SignInPage";
 
 const App = () => {
   /* We want to match to the note/id 
@@ -21,6 +22,7 @@ const App = () => {
           <Route exact path={ROUTES.HOME} component={HomePage} />
           <Route path={ROUTES.NOTES_PAGE} component={NotesPage} />
           <Route path={notePath} component={ViewNotePage} />
+          <Route path={ROUTES.SIGNIN_PAGE} component={SignInPage} />
         </Switch>
       </div>
     </Router>

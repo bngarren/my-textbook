@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import { useHistory } from "react-router-dom";
 
-import Container from "@material-ui/core";
+import { Container, Typography } from "@material-ui/core";
 
 import { useFirebase } from "../Firebase/context";
+
+import * as ROUTES from "../../constants/routes";
 
 const SignInPage = () => {
   const INITIAL_STATE = {
@@ -14,19 +17,29 @@ const SignInPage = () => {
   const [error, setError] = useState(null);
 
   const firebase = useFirebase();
+  const history = useHistory();
 
   const onSubmit = (e) => {
+    e.preventDefault();
     const { email, password } = userEntry;
 
-    firebase.doSignInWithEmailAndPassword(email, password).then(() => {
-      setUserEntry({ ...INITIAL_STATE });
-      setError(null);
-    });
-
-    e.preventDefault();
+    firebase
+      .doSignInWithEmailAndPassword(email, password)
+      .then(() => {
+        setUserEntry({ ...INITIAL_STATE });
+        setError(null);
+        history.push(ROUTES.HOME);
+      })
+      .catch((e) => setError(e));
   };
 
-  const onChange = (e) => {};
+  const onChange = (e) => {
+    e.preventDefault();
+    setUserEntry({
+      ...userEntry,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const isFormValid = () => {
     return userEntry.email !== "" && userEntry.password !== "";
@@ -34,18 +47,19 @@ const SignInPage = () => {
 
   return (
     <Container>
-      <form onSubmit={this.onSubmit}>
+      <Typography variant="h2">Sign In</Typography>
+      <form onSubmit={onSubmit}>
         <input
           name="email"
           value={userEntry.email}
-          onChange={this.onChange}
+          onChange={onChange}
           type="text"
           placeholder="Email Address"
         />
         <input
           name="password"
           value={userEntry.password}
-          onChange={this.onChange}
+          onChange={onChange}
           type="password"
           placeholder="Password"
         />
