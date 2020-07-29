@@ -25,7 +25,10 @@ const Navigation = () => {
             <FreeBreakfast></FreeBreakfast>
           </Button>
         </Link>
-        <Link to={ROUTES.NOTES_LIST}>
+        <Link to={ROUTES.SETS_PAGE}>
+          <Button>SETS</Button>
+        </Link>
+        <Link to={ROUTES.NOTES_PAGE}>
           <Button>NOTES</Button>
         </Link>
       </Toolbar>
