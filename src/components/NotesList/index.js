@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useFirebase } from "../Firebase";
 import NoteLink from "../NoteLink";
-import * as ROUTES from "../../constants/routes";
 
 const NotesList = () => {
   const firebase = useFirebase();
