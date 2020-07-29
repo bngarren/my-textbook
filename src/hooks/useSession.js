@@ -1,6 +1,10 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useFirebase } from "../components/Firebase";
 
+/* 
+See https://benmcmahen.com/using-firebase-with-react-hooks/
+*/
+
 export const userContext = createContext({
   user: null,
 });
@@ -31,9 +35,10 @@ export const useAuth = () => {
     // listen for auth state changes
     const unsubscribe = firebase.auth.onAuthStateChanged(onChange);
 
+    console.log("useSession.js: useEffect");
     //unsubscribe to the listener when unmounting
     return () => unsubscribe();
-  }, []);
+  }, [firebase]);
 
   return state;
 };
