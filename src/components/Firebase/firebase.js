@@ -35,6 +35,8 @@ class Firebase {
     this.auth.signInWithEmailAndPassword(email, password);
 
   doSignOut = () => this.auth.signOut();
+
+  userByUid = (uid) => this.db.collection("users").where("uid", "==", uid);
 }
 
 export default Firebase;

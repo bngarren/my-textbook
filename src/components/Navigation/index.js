@@ -5,11 +5,12 @@ import AppBar from "@material-ui/core/AppBar";
 import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
 import FreeBreakfast from "@material-ui/icons/FreeBreakfast";
+import Typography from "@material-ui/core/Typography";
 
 import SignOutButton from "../SignOut";
 import * as ROUTES from "../../constants/routes";
 
-import { useSession } from "../../hooks/useSession";
+import { useSession, useUserInDb } from "../../hooks/useSession";
 
 const useStyles = makeStyles({
   appBarRoot: {
@@ -20,7 +21,10 @@ const useStyles = makeStyles({
 const Navigation = () => {
   const classes = useStyles();
 
-  const user = useSession();
+  /* Get the user session data (i.e. from Firebase authentication)*/
+  const userSession = useSession();
+  /* Get the user database data (i.e. from Firestore collection 'users')*/
+  const user = useUserInDb();
 
   return (
     <AppBar className={classes.appBarRoot} position="static">
@@ -36,7 +40,7 @@ const Navigation = () => {
         <Link to={ROUTES.NOTES_PAGE}>
           <Button>NOTES</Button>
         </Link>
-        {user && <SignOutButton />}
+        {userSession && <SignOutButton />}
       </Toolbar>
     </AppBar>
   );

@@ -16,11 +16,12 @@ const App = () => {
   See https://reactrouter.com/web/example/url-params */
   const notePath = `${ROUTES.NOTE}/:id`;
 
-  const { initializing, user } = useAuth();
+  const { sessionState, userInDb } = useAuth();
+  const { intializing, userSession } = sessionState;
 
   return (
     <Router>
-      <userContext.Provider value={{ user }}>
+      <userContext.Provider value={{ userSession, userInDb }}>
         <Navigation />
         <div>
           <Switch>
