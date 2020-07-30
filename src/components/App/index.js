@@ -8,6 +8,7 @@ import HomePage from "../HomePage";
 import NotesPage from "../NotesPage";
 import ViewNotePage from "../ViewNote";
 import SignInPage from "../SignInPage";
+import SignOutPage from "../SignOutPage";
 
 import { userContext, useAuth } from "../../hooks/useSession";
 
@@ -29,6 +30,7 @@ const App = () => {
             <Route path={ROUTES.NOTES_PAGE} component={NotesPage} />
             <Route path={notePath} component={ViewNotePage} />
             <Route path={ROUTES.SIGNIN_PAGE} component={SignInPage} />
+            <Route path={ROUTES.SIGNOUT_PAGE} component={SignOutPage} />
           </Switch>
         </div>
       </userContext.Provider>
