@@ -17,7 +17,7 @@ and the specific user data from the Firestore database collection "/users'"
 So if session data or user data is needed anywhere in the app, this context can
 be consumed */
 export const userContext = createContext({
-  initializing: null,
+  status: null,
   userSession: null,
   userInDB: null,
 });
@@ -28,8 +28,8 @@ export const userContext = createContext({
 This contains the information from the Authentication part
 of Firebase about the user but not our user specific dataase */
 export const useSession = () => {
-  const { initializing, userSession } = useContext(userContext);
-  return { initializing, userSession };
+  const { status, userSession } = useContext(userContext);
+  return { status, userSession };
 };
 
 /* Return the useInDb object from our userContext 
@@ -40,29 +40,31 @@ export const useUserInDb = () => {
   return userInDb;
 };
 
+export const SESSION_STATUS = {
+  ANON: 0,
+  INITIALIZING: 1,
+  USER_READY: 2,
+};
+
 /* This hook will update its state each time its listener receives an
 onAuthStateChanged event from Firebase authentication, i.e. user logged in/out, etc.
 Its state is what's used to provide the up to date information for the userContext */
 export const useAuth = () => {
   const firebase = useFirebase();
-  const [sessionState, setSessionState] = useState(() => {
-    const userSession = firebase.auth.currentUser;
-    return {
-      initializing: !userSession,
-      userSession: userSession,
-    };
-  });
+  const [sessionState, setSessionState] = useState(firebase.auth.currentUser);
   const [userState, setUserState] = useState(null);
+  const [status, setStatus] = useState(SESSION_STATUS.INITIALIZING);
 
   const getUser = useCallback(
-    async (uid) => {
+    async (user) => {
       await firebase
-        .userByUid(uid)
+        .userByUid(user.uid)
         .get()
         .then((snapshot) => {
           let docs = snapshot.docs;
           for (let doc of docs) {
             setUserState(doc.data());
+            setStatus(SESSION_STATUS.USER_READY);
           }
         });
     },
@@ -71,13 +73,13 @@ export const useAuth = () => {
 
   const onChange = useCallback(
     (user) => {
-      setSessionState({
-        initializing: false,
-        userSession: user,
-      });
-
       if (user) {
-        getUser(user.uid);
+        setStatus(SESSION_STATUS.INITIALIZING);
+        setSessionState(user);
+        getUser(user);
+      } else {
+        setStatus(SESSION_STATUS.ANON);
+        setSessionState(null);
       }
     },
     [getUser]
@@ -92,7 +94,7 @@ export const useAuth = () => {
     return () => unsubscribe();
   }, [firebase, onChange]);
 
-  return { ...sessionState, userInDb: userState };
+  return { status: status, userSession: sessionState, userInDb: userState };
 };
 
 export default useSession;

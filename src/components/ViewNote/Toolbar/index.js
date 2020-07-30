@@ -33,7 +33,7 @@ const ViewNoteToolbar = (props) => {
   const classes = useStyles();
   return (
     <>
-      <Toolbar className={classes.rootToolbar}>
+      <Toolbar className={classes.rootToolbar} disableGutters={true}>
         <Button
           name={WORKSPACES.INFO_WORKSPACE}
           onClick={onToolClicked}

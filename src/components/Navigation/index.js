@@ -6,6 +6,7 @@ import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
 import FreeBreakfast from "@material-ui/icons/FreeBreakfast";
 import Divider from "@material-ui/core/Divider";
+import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import AccountCircle from "@material-ui/icons/AccountCircle";
@@ -24,6 +25,9 @@ const useStyles = makeStyles({
   },
   appBarRoot: {
     backgroundColor: "transparent",
+  },
+  logo: {
+    minWidth: "0",
   },
   rightContent: {
     display: "flex",
@@ -68,57 +72,59 @@ const Navigation = () => {
   return (
     <div className={classes.root}>
       <AppBar className={classes.appBarRoot} position="static">
-        <Toolbar>
-          <Link to={ROUTES.HOME}>
-            <Button>
-              <FreeBreakfast></FreeBreakfast>
-            </Button>
-          </Link>
-          <Divider orientation="vertical" variant="middle" flexItem />>
-          <Link to={ROUTES.SETS_PAGE}>
-            <Button>SETS</Button>
-          </Link>
-          <Link to={ROUTES.NOTES_PAGE}>
-            <Button>NOTES</Button>
-          </Link>
-          <Divider orientation="vertical" variant="middle" flexItem />
-          {sessionState.userSession ? (
-            <div className={classes.rightContent}>
-              <IconButton onClick={handleMenu} label="test">
-                <AccountCircle />
-              </IconButton>
-              {user && (
-                <Typography variant="body1" className={classes.usernameText}>
-                  {user.username}
-                </Typography>
-              )}
-
-              <Menu
-                anchorEl={anchorEl}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                keepMounted
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-                open={open}
-                onClose={handleCloseMenu}
-              >
-                <MenuItem onClick={handleCloseMenu}>Profile</MenuItem>
-                <Divider orientation="horizontal" />
-                <MenuItem onClick={onSignOutClick}>Sign Out</MenuItem>
-              </Menu>
-            </div>
-          ) : (
-            location.pathname !== ROUTES.SIGNIN_PAGE && (
+        <Container>
+          <Toolbar>
+            <Link to={ROUTES.HOME}>
+              <Button className={classes.logo}>
+                <FreeBreakfast></FreeBreakfast>
+              </Button>
+            </Link>
+            <Divider orientation="vertical" variant="middle" flexItem />
+            <Link to={ROUTES.SETS_PAGE}>
+              <Button>SETS</Button>
+            </Link>
+            <Link to={ROUTES.NOTES_PAGE}>
+              <Button>NOTES</Button>
+            </Link>
+            <Divider orientation="vertical" variant="middle" flexItem />
+            {sessionState.userSession ? (
               <div className={classes.rightContent}>
-                <Link to={ROUTES.SIGNIN_PAGE}>
-                  <Button>Log in</Button>
-                </Link>
+                <IconButton onClick={handleMenu} label="test">
+                  <AccountCircle />
+                </IconButton>
+                {user && (
+                  <Typography variant="body1" className={classes.usernameText}>
+                    {user.username}
+                  </Typography>
+                )}
+
+                <Menu
+                  anchorEl={anchorEl}
+                  anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                  open={open}
+                  onClose={handleCloseMenu}
+                >
+                  <MenuItem onClick={handleCloseMenu}>Profile</MenuItem>
+                  <Divider orientation="horizontal" />
+                  <MenuItem onClick={onSignOutClick}>Sign Out</MenuItem>
+                </Menu>
               </div>
-            )
-          )}
-        </Toolbar>
+            ) : (
+              location.pathname !== ROUTES.SIGNIN_PAGE && (
+                <div className={classes.rightContent}>
+                  <Link to={ROUTES.SIGNIN_PAGE}>
+                    <Button>Log in</Button>
+                  </Link>
+                </div>
+              )
+            )}
+          </Toolbar>
+        </Container>
       </AppBar>
     </div>
   );
