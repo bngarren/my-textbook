@@ -56,8 +56,8 @@ export const useAuth = () => {
   const [status, setStatus] = useState(SESSION_STATUS.INITIALIZING);
 
   const getUser = useCallback(
-    async (user) => {
-      await firebase
+    (user) => {
+      firebase
         .userByUid(user.uid)
         .get()
         .then((snapshot) => {
@@ -65,6 +65,9 @@ export const useAuth = () => {
           for (let doc of docs) {
             setUserState(doc.data());
             setStatus(SESSION_STATUS.USER_READY);
+            console.log(
+              "useSession.js: getUser has completed, setStatus to USER_READY"
+            );
           }
         });
     },
@@ -76,10 +79,12 @@ export const useAuth = () => {
       if (user) {
         setStatus(SESSION_STATUS.INITIALIZING);
         setSessionState(user);
+        console.log("useSession.js: onChange, setStatus to INITIALIZING");
         getUser(user);
       } else {
         setStatus(SESSION_STATUS.ANON);
         setSessionState(null);
+        console.log("useSession.js: onChange, setStatus to ANON");
       }
     },
     [getUser]
@@ -89,7 +94,7 @@ export const useAuth = () => {
     // listen for auth state changes
     const unsubscribe = firebase.auth.onAuthStateChanged(onChange);
 
-    console.log("useSession.js: useEffect");
+    console.log("useSession.js: useEffect -- subscribed to onAuthStateChanged");
     //unsubscribe to the listener when unmounting
     return () => unsubscribe();
   }, [firebase, onChange]);

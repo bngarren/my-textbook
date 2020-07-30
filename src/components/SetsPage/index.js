@@ -11,25 +11,16 @@ import {
 import Typography from "@material-ui/core/Typography";
 
 const SetsPage = () => {
-  const [user, setUser] = useState(null);
-  const [setIds, setSetIds] = useState(null);
-  const sessionState = useSession();
   const userInDb = useUserInDb();
-
-  const firebase = useFirebase();
-
-  useEffect(() => {
-    setUser(userInDb);
-    console.log("SetsPage useEffect to setUser");
-  }, [userInDb]);
+  const [user, setUser] = useState(userInDb && userInDb);
+  const sessionState = useSession();
 
   useEffect(() => {
-    if (!user) return;
-
-    if (user.set_ids) {
-      setSetIds(user.set_ids);
+    if (userInDb) {
+      userInDb && setUser(userInDb);
+      //console.log(`SetsPage useEffect to setUser passing => ${userInDb}`);
     }
-  }, [user]);
+  }, [userInDb]);
 
   const switchEnum = (status) => {
     switch (status) {
@@ -38,34 +29,64 @@ const SetsPage = () => {
       case SESSION_STATUS.INITIALIZING:
         return <Loading />;
       case SESSION_STATUS.USER_READY:
-        return <>Sets</>;
+        return user ? userReadyRender() : <Loading />;
       default:
         return <>Incorrect enum</>;
     }
   };
 
+  const userReadyRender = () => {
+    return (
+      <>
+        <Typography variant="h3">Sets</Typography>
+        <SetsList user={user} />
+      </>
+    );
+  };
+
   return <div>{switchEnum(sessionState.status)}</div>;
 };
 
-export default SetsPage;
+const SetsList = ({ user }) => {
+  const [setIds, setSetIds] = useState(user && user.set_ids);
+  const [sets, setSets] = useState(null);
+  const firebase = useFirebase();
 
-/* if (!sessionState.initializing && sessionState.userSession === null) {
-  return <div>Log in required.</div>;
-}
+  useEffect(() => {
+    if (user) {
+      setSetIds(user.set_ids);
+    }
+  }, [user]);
 
-if (!sessionState.initializing && sessionState.userSession !== null) {
-  if (user) {
+  useEffect(() => {
+    if (!firebase) {
+      console.log("cant find firebase");
+      return;
+    }
+    const getSets = async () => {
+      const refs = await firebase.refsFromSetIds(setIds);
+      const docs = await firebase.setsFromRefs(refs).get();
+      let setsArray = [];
+      docs.forEach((doc) => {
+        setsArray.push({ ...doc.data(), id: doc.id });
+      });
+      setSets(setsArray);
+    };
+
+    getSets();
+  }, [firebase, setIds]);
+
+  if (sets) {
     return (
-      <div>
-        <Typography variant="h3">Sets</Typography>
-        {console.log("ok")}
-      </div>
+      <ul>
+        {sets.map((set) => (
+          <li key={set.id}>{set.title}</li>
+        ))}{" "}
+      </ul>
     );
   } else {
-    // Put loading indicator here
-    return <Loading />;
+    return "Loading user's sets";
   }
-} else {
-  // Put loading indicator here
-  return <Loading />;
-} */
+};
+
+export default SetsPage;

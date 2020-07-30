@@ -1,4 +1,4 @@
-import app from "firebase/app";
+import * as firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
 
@@ -14,10 +14,10 @@ const firebaseConfig = {
 
 class Firebase {
   constructor() {
-    app.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
 
-    this.db = app.firestore();
-    this.auth = app.auth();
+    this.db = firebase.firestore();
+    this.auth = firebase.auth();
   }
 
   // Database API
@@ -25,6 +25,16 @@ class Firebase {
   note = (noteId) => this.db.collection("notes").doc(noteId);
 
   notes = () => this.db.collection("notes");
+
+  refsFromSetIds = (ids) => {
+    const refs = ids.map((id) => this.db.doc(`sets/${id}`));
+    return refs;
+  };
+
+  setsFromRefs = (refs) =>
+    this.db
+      .collection("sets")
+      .where(firebase.firestore.FieldPath.documentId(), "in", refs);
 
   // Auth API
 
