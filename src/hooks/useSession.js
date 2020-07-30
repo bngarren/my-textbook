@@ -17,6 +17,7 @@ and the specific user data from the Firestore database collection "/users'"
 So if session data or user data is needed anywhere in the app, this context can
 be consumed */
 export const userContext = createContext({
+  initializing: null,
   userSession: null,
   userInDB: null,
 });
@@ -27,8 +28,8 @@ export const userContext = createContext({
 This contains the information from the Authentication part
 of Firebase about the user but not our user specific dataase */
 export const useSession = () => {
-  const { userSession } = useContext(userContext);
-  return userSession;
+  const { initializing, userSession } = useContext(userContext);
+  return { initializing, userSession };
 };
 
 /* Return the useInDb object from our userContext 
@@ -61,7 +62,6 @@ export const useAuth = () => {
         .then((snapshot) => {
           let docs = snapshot.docs;
           for (let doc of docs) {
-            console.log(doc.data());
             setUserState(doc.data());
           }
         });
@@ -92,7 +92,7 @@ export const useAuth = () => {
     return () => unsubscribe();
   }, [firebase, onChange]);
 
-  return { sessionState, userInDb: userState };
+  return { ...sessionState, userInDb: userState };
 };
 
 export default useSession;

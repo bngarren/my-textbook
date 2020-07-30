@@ -39,7 +39,7 @@ const Navigation = () => {
   const classes = useStyles();
 
   /* Get the user session data (i.e. from Firebase authentication)*/
-  const userSession = useSession();
+  const sessionState = useSession();
   /* Get the user database data (i.e. from Firestore collection 'users')*/
   const user = useUserInDb();
 
@@ -82,7 +82,7 @@ const Navigation = () => {
             <Button>NOTES</Button>
           </Link>
           <Divider orientation="vertical" variant="middle" flexItem />
-          {userSession ? (
+          {sessionState.userSession ? (
             <div className={classes.rightContent}>
               <IconButton onClick={handleMenu} label="test">
                 <AccountCircle />
