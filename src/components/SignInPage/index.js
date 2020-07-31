@@ -3,7 +3,7 @@ import { useHistory } from "react-router-dom";
 
 import { Container, Typography } from "@material-ui/core";
 
-import { useFirebase } from "../Firebase/context";
+import { doSignInWithEmailAndPassword } from "../Firebase";
 
 import * as ROUTES from "../../constants/routes";
 
@@ -16,15 +16,13 @@ const SignInPage = () => {
   const [userEntry, setUserEntry] = useState({ ...INITIAL_STATE });
   const [error, setError] = useState(null);
 
-  const firebase = useFirebase();
   const history = useHistory();
 
   const onSubmit = (e) => {
     e.preventDefault();
     const { email, password } = userEntry;
 
-    firebase
-      .doSignInWithEmailAndPassword(email, password)
+    doSignInWithEmailAndPassword(email, password)
       .then(() => {
         setUserEntry({ ...INITIAL_STATE });
         setError(null);

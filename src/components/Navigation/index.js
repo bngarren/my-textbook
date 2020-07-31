@@ -13,7 +13,7 @@ import AccountCircle from "@material-ui/icons/AccountCircle";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 
-import { useFirebase } from "../Firebase";
+import { doSignOut } from "../Firebase";
 
 import * as ROUTES from "../../constants/routes";
 
@@ -50,8 +50,6 @@ const Navigation = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
-  const firebase = useFirebase();
-
   const location = useLocation();
   const history = useHistory();
 
@@ -64,7 +62,7 @@ const Navigation = () => {
   };
 
   const onSignOutClick = (event) => {
-    firebase.doSignOut();
+    doSignOut();
     handleCloseMenu(event);
     history.push(ROUTES.SIGNOUT_PAGE);
   };

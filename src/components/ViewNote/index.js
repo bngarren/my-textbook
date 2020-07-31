@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { useFirebase } from "../Firebase";
+import { getNoteById } from "../Firebase";
 import ViewNoteToolbar from "./Toolbar";
 
 import Container from "@material-ui/core/Container";
@@ -13,7 +13,6 @@ const ViewNotePage = () => {
 };
 
 const NoteView = (props) => {
-  const firebase = useFirebase();
   const { id: noteId } = useParams();
   const [note, setNote] = useState();
   const [currentTextSelected, setCurrentTextSelected] = useState(null);
@@ -63,18 +62,15 @@ const NoteView = (props) => {
   If these values change, the useEffect hook will be called again */
   useEffect(() => {
     const getNote = async (noteId) => {
-      await firebase
-        .note(noteId)
-        .get()
-        .then((snapshot) => {
-          if (snapshot.exists) {
-            setNote(snapshot.data());
-          }
-        });
+      await getNoteById(noteId).then((snapshot) => {
+        if (snapshot.exists) {
+          setNote(snapshot.data());
+        }
+      });
     };
     console.log("ViewNote/index: useEffect getNote()");
     getNote(noteId);
-  }, [firebase, noteId]);
+  }, [noteId]);
 
   return (
     <>

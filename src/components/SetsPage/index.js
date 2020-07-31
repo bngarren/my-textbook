@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 
 import Loading from "../Loading";
-import { useFirebase } from "../Firebase";
+import { getSetsByIds } from "../Firebase";
 import {
   useUserInDb,
   useSession,
   SESSION_STATUS,
 } from "../../hooks/useSession";
+
+import AddSetForm from "./AddSet";
 
 import Typography from "@material-ui/core/Typography";
 
@@ -39,6 +41,7 @@ const SetsPage = () => {
     return (
       <>
         <Typography variant="h3">Sets</Typography>
+        <AddSetForm />
         <SetsList user={user} />
       </>
     );
@@ -50,7 +53,6 @@ const SetsPage = () => {
 const SetsList = ({ user }) => {
   const [setIds, setSetIds] = useState(user && user.set_ids);
   const [sets, setSets] = useState(null);
-  const firebase = useFirebase();
 
   useEffect(() => {
     if (user) {
@@ -59,10 +61,6 @@ const SetsList = ({ user }) => {
   }, [user]);
 
   useEffect(() => {
-    if (!firebase) {
-      console.log("SetsPage.js: cant find firebase");
-      return;
-    }
     if (setIds == null || !setIds.length) {
       console.log(
         "SetsPage.js: nothing in set_id array for this user in the database"
@@ -70,14 +68,7 @@ const SetsList = ({ user }) => {
       return;
     }
     const getSets = async () => {
-      const refs = await firebase.refsFromSetIds(setIds);
-      const snapshot = await firebase.setsFromRefs(refs).get();
-      if (snapshot.empty) {
-        console.log(
-          "SetsPage.js: Did not find any documents in 'sets' that matched any item in 'set_id' array"
-        );
-      }
-      console.log("SetsPage.js: snapshot size", snapshot.size);
+      const snapshot = await getSetsByIds(setIds);
       let setsArray = [];
       snapshot.forEach((doc) => {
         setsArray.push({ ...doc.data(), id: doc.id });
@@ -86,7 +77,7 @@ const SetsList = ({ user }) => {
     };
 
     getSets();
-  }, [firebase, setIds]);
+  }, [setIds]);
 
   if (sets) {
     return (
@@ -102,3 +93,19 @@ const SetsList = ({ user }) => {
 };
 
 export default SetsPage;
+
+/* const getSets = async () => {
+  const refs = await firebase.refsFromSetIds(setIds);
+  const snapshot = await firebase.setsFromRefs(refs).get();
+  if (snapshot.empty) {
+    console.log(
+      "SetsPage.js: Did not find any documents in 'sets' that matched any item in 'set_id' array"
+    );
+  }
+  console.log("SetsPage.js: snapshot size", snapshot.size);
+  let setsArray = [];
+  snapshot.forEach((doc) => {
+    setsArray.push({ ...doc.data(), id: doc.id });
+  });
+  setSets(setsArray);
+}; */

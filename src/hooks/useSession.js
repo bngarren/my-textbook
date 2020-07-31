@@ -5,7 +5,12 @@ import {
   useEffect,
   useCallback,
 } from "react";
-import { useFirebase } from "../components/Firebase";
+import {
+  currentUser,
+  userByUid,
+  doSignOut,
+  onAuthStateChanged,
+} from "../components/Firebase";
 
 /* 
 See https://benmcmahen.com/using-firebase-with-react-hooks/
@@ -50,47 +55,42 @@ export const SESSION_STATUS = {
 onAuthStateChanged event from Firebase authentication, i.e. user logged in/out, etc.
 Its state is what's used to provide the up to date information for the userContext */
 export const useAuth = () => {
-  const firebase = useFirebase();
-  const [sessionState, setSessionState] = useState(firebase.auth.currentUser);
+  const [sessionState, setSessionState] = useState(currentUser);
   const [userState, setUserState] = useState(null);
   const [status, setStatus] = useState(SESSION_STATUS.INITIALIZING);
 
-  const getUser = useCallback(
-    (user) => {
-      firebase
-        .userByUid(user.uid)
-        .get()
-        .then((snapshot) => {
-          if (snapshot.empty) {
-            throw new Error(
-              "could find authenticated user in the 'users' firestore db"
-            );
-          }
-          let docs = snapshot.docs;
+  const getUser = useCallback((user) => {
+    userByUid(user.uid)
+      .get()
+      .then((snapshot) => {
+        if (snapshot.empty) {
+          throw new Error(
+            "could find authenticated user in the 'users' firestore db"
+          );
+        }
+        let docs = snapshot.docs;
 
-          if (docs.length > 1) {
-            throw new Error(
-              "more than 1 entry in the 'users' firestore db for this authenticated user"
-            );
-          }
+        if (docs.length > 1) {
+          throw new Error(
+            "more than 1 entry in the 'users' firestore db for this authenticated user"
+          );
+        }
 
-          for (let doc of docs) {
-            setUserState(doc.data());
-            setStatus(SESSION_STATUS.USER_READY);
-            console.log(
-              "useSession.js: getUser has completed, setStatus to USER_READY"
-            );
-          }
-        })
-        .catch((e) => {
-          console.log(e.message);
+        for (let doc of docs) {
+          setUserState(doc.data());
+          setStatus(SESSION_STATUS.USER_READY);
+          console.log(
+            "useSession.js: getUser has completed, setStatus to USER_READY"
+          );
+        }
+      })
+      .catch((e) => {
+        console.log(e.message);
 
-          // NEED TO LOG THE USER OUT BECAUSE WE CANT CONTINUE WITH THESE ERRORS
-          firebase.doSignOut();
-        });
-    },
-    [firebase]
-  );
+        // NEED TO LOG THE USER OUT BECAUSE WE CANT CONTINUE WITH THESE ERRORS
+        doSignOut();
+      });
+  }, []);
 
   const onChange = useCallback(
     (user) => {
@@ -114,12 +114,12 @@ export const useAuth = () => {
 
   useEffect(() => {
     // listen for auth state changes
-    const unsubscribe = firebase.auth.onAuthStateChanged(onChange);
+    const unsubscribe = onAuthStateChanged(onChange);
 
     console.log("useSession.js: useEffect -- subscribed to onAuthStateChanged");
     //unsubscribe to the listener when unmounting
     return () => unsubscribe();
-  }, [firebase, onChange]);
+  }, [onChange]);
 
   return { status: status, userSession: sessionState, userInDb: userState };
 };

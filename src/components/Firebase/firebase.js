@@ -12,41 +12,49 @@ const firebaseConfig = {
   appId: "1:685663840714:web:a82aef34bd87490e7bc733",
 };
 
-class Firebase {
-  constructor() {
-    firebase.initializeApp(firebaseConfig);
+export const ROOT_COLLECTION = {
+  USERS: "users",
+  SETS: "sets",
+  NOTES: "notes",
+};
 
-    this.db = firebase.firestore();
-    this.auth = firebase.auth();
-  }
+firebase.initializeApp(firebaseConfig);
 
-  // Database API
+export const db = firebase.firestore();
+const auth = firebase.auth();
 
-  note = (noteId) => this.db.collection("notes").doc(noteId);
+// ~-~-~-~-~-~-~-~-~-~-~- Auth -~-~-~-~-~-~-~-~-~-~-~
 
-  notes = () => this.db.collection("notes");
+export const doCreateUserWithEmailAndPassword = (email, password) => {
+  return auth.createUserWithEmailAndPassword(email, password);
+};
 
-  refsFromSetIds = (ids) => {
-    const refs = ids.map((id) => this.db.doc(`sets/${id}`));
-    return refs;
-  };
+export const doSignInWithEmailAndPassword = (email, password) => {
+  return auth.signInWithEmailAndPassword(email, password);
+};
 
-  setsFromRefs = (refs) =>
-    this.db
-      .collection("sets")
-      .where(firebase.firestore.FieldPath.documentId(), "in", refs);
+export const doSignOut = () => auth.signOut();
 
-  // Auth API
+export const currentUser = () => auth.currentUser;
 
-  doCreateUserWithEmailAndPassword = (email, password) =>
-    this.auth.createUserWithEmailAndPassword(email, password);
+export const onAuthStateChanged = (callback) => {
+  return auth.onAuthStateChanged(callback);
+};
 
-  doSignInWithEmailAndPassword = (email, password) =>
-    this.auth.signInWithEmailAndPassword(email, password);
+// ~-~-~-~-~-~-~-~-~-~-~- Firestore -~-~-~-~-~-~-~-~-~-~-~
 
-  doSignOut = () => this.auth.signOut();
+export const userByUid = (uid) =>
+  db.collection(ROOT_COLLECTION.USERS).where("uid", "==", uid);
 
-  userByUid = (uid) => this.db.collection("users").where("uid", "==", uid);
-}
+export const getNoteById = (noteId) => {
+  return db.collection(ROOT_COLLECTION.NOTES).doc(noteId).get();
+};
 
-export default Firebase;
+export const getSetsByIds = (ids) => {
+  const refs = ids.map((id) => db.doc(`${ROOT_COLLECTION.SETS}/${id}`));
+
+  return db
+    .collection(ROOT_COLLECTION.SETS)
+    .where(firebase.firestore.FieldPath.documentId(), "in", refs)
+    .get();
+};
