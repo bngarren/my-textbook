@@ -60,6 +60,9 @@ export const useAuth = () => {
   const [userState, setUserState] = useState(null);
   const [status, setStatus] = useState(SESSION_STATUS.INITIALIZING);
 
+  /* Listener for our onSnapshot query.
+  Must store it in a ref so that it can be unsubcribed on unmount
+  Default: empty function */
   const userObserverRef = useRef(() => () => null);
 
   const onChange = useCallback((user) => {
@@ -106,7 +109,8 @@ export const useAuth = () => {
   }, [onChange]);
 
   useEffect(() => {
-    return () => userObserverRef;
+    //unsubscribe to the listener when unmounting
+    return () => userObserverRef();
   }, []);
 
   return { status: status, userSession: sessionState, userInDb: userState };

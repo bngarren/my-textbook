@@ -1,3 +1,10 @@
 
 Todo:
   ☐ Surround every call to a firebase function in a try/catch block because I'm not catching these on the firebase.js end just throwing them
+  ☐ Use react-window with Mui List to implement a 'virtualized list'
+      This would render only part of a large data set (just enough to fill the viewport)
+      https://github.com/bvaughn/react-window
+  ☐ Look into using cache with Firestore to possibly save on reads
+      May be able to perform a set of operations in this way: Grab fresh data from server (e.g. user's Sets) and populate a view, then if user adds/deletes/updates, maybe do this only to the local cache for a period of time so that there isnt a new write and read to the server for every single step. Then at say 2 min, the real add/del/update request can be sent to the server
+      Official (good read): https://firebase.google.com/docs/firestore/query-data/listen#view_changes_between_snapshots
+      Explaining firestore caches here: https://medium.com/firebase-developers/firestore-clients-to-cache-or-not-to-cache-or-both-8f66a239c329

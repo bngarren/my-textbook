@@ -100,3 +100,5 @@ export const addSet = (userId, data) => {
     throw new Error("Transaction failed for addSet");
   }
 };
+
+export const removeSet = (userId, setId) => {};

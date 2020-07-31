@@ -12,6 +12,7 @@ import {
   getNoteById,
   getSetsByIds,
   addSet,
+  removeSet,
 } from "./firebase";
 
 export { FirebaseContext, useFirebase };
@@ -28,4 +29,5 @@ export {
   getNoteById,
   getSetsByIds,
   addSet,
+  removeSet,
 };
