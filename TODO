@@ -1,0 +1,3 @@
+
+Todo:
+  ☐ Surround every call to a firebase function in a try/catch block because I'm not catching these on the firebase.js end just throwing them

@@ -4,10 +4,11 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
 import {
   currentUser,
-  userByUid,
+  onSnapshotUserById,
   doSignOut,
   onAuthStateChanged,
 } from "../components/Firebase";
@@ -59,58 +60,39 @@ export const useAuth = () => {
   const [userState, setUserState] = useState(null);
   const [status, setStatus] = useState(SESSION_STATUS.INITIALIZING);
 
-  const getUser = useCallback((user) => {
-    userByUid(user.uid)
-      .get()
-      .then((snapshot) => {
-        if (snapshot.empty) {
-          throw new Error(
-            "could find authenticated user in the 'users' firestore db"
-          );
-        }
-        let docs = snapshot.docs;
+  const userObserverRef = useRef(() => () => null);
 
-        if (docs.length > 1) {
-          throw new Error(
-            "more than 1 entry in the 'users' firestore db for this authenticated user"
-          );
-        }
-
-        for (let doc of docs) {
-          setUserState(doc.data());
+  const onChange = useCallback((user) => {
+    if (user) {
+      setStatus(SESSION_STATUS.INITIALIZING);
+      setSessionState(user);
+      console.log("useSession.js: onChange, setStatus to INITIALIZING");
+      try {
+        userObserverRef.current = onSnapshotUserById(user.uid, (snapshot) => {
+          if (snapshot.empty) {
+            throw new Error(
+              "could find authenticated user in the 'users' firestore db"
+            );
+          }
+          setUserState(snapshot.data());
           setStatus(SESSION_STATUS.USER_READY);
           console.log(
             "useSession.js: getUser has completed, setStatus to USER_READY"
           );
-        }
-      })
-      .catch((e) => {
+          console.log(snapshot.data());
+        });
+      } catch (e) {
         console.log(e.message);
 
         // NEED TO LOG THE USER OUT BECAUSE WE CANT CONTINUE WITH THESE ERRORS
         doSignOut();
-      });
-  }, []);
-
-  const onChange = useCallback(
-    (user) => {
-      if (user) {
-        setStatus(SESSION_STATUS.INITIALIZING);
-        setSessionState(user);
-        console.log("useSession.js: onChange, setStatus to INITIALIZING");
-        try {
-          getUser(user);
-        } catch (error) {
-          console.log(error.message);
-        }
-      } else {
-        setStatus(SESSION_STATUS.ANON);
-        setSessionState(null);
-        console.log("useSession.js: onChange, setStatus to ANON");
       }
-    },
-    [getUser]
-  );
+    } else {
+      setStatus(SESSION_STATUS.ANON);
+      setSessionState(null);
+      console.log("useSession.js: onChange, setStatus to ANON");
+    }
+  }, []);
 
   useEffect(() => {
     // listen for auth state changes
@@ -118,8 +100,14 @@ export const useAuth = () => {
 
     console.log("useSession.js: useEffect -- subscribed to onAuthStateChanged");
     //unsubscribe to the listener when unmounting
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+    };
   }, [onChange]);
+
+  useEffect(() => {
+    return () => userObserverRef;
+  }, []);
 
   return { status: status, userSession: sessionState, userInDb: userState };
 };

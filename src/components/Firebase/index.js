@@ -8,8 +8,10 @@ import {
   currentUser,
   onAuthStateChanged,
   userByUid,
+  onSnapshotUserById,
   getNoteById,
   getSetsByIds,
+  addSet,
 } from "./firebase";
 
 export { FirebaseContext, useFirebase };
@@ -22,6 +24,8 @@ export {
   currentUser,
   onAuthStateChanged,
   userByUid,
+  onSnapshotUserById,
   getNoteById,
   getSetsByIds,
+  addSet,
 };

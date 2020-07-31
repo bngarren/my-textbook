@@ -28,7 +28,9 @@ const SignInPage = () => {
         setError(null);
         history.push(ROUTES.HOME);
       })
-      .catch((e) => setError(e));
+      .catch((e) => {
+        setError(e);
+      });
   };
 
   const onChange = (e) => {

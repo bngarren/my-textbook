@@ -43,8 +43,18 @@ export const onAuthStateChanged = (callback) => {
 
 // ~-~-~-~-~-~-~-~-~-~-~- Firestore -~-~-~-~-~-~-~-~-~-~-~
 
-export const userByUid = (uid) =>
-  db.collection(ROOT_COLLECTION.USERS).where("uid", "==", uid);
+export const userByUid = (uid) => {
+  return db.collection(ROOT_COLLECTION.USERS).where("uid", "==", uid).get();
+};
+
+export const onSnapshotUserById = (id, callback) => {
+  return db
+    .collection(ROOT_COLLECTION.USERS)
+    .doc(id)
+    .onSnapshot(callback, (err) => {
+      throw new Error("Encountered error:", err);
+    });
+};
 
 export const getNoteById = (noteId) => {
   return db.collection(ROOT_COLLECTION.NOTES).doc(noteId).get();
@@ -57,4 +67,36 @@ export const getSetsByIds = (ids) => {
     .collection(ROOT_COLLECTION.SETS)
     .where(firebase.firestore.FieldPath.documentId(), "in", refs)
     .get();
+};
+
+export const addSet = (userId, data) => {
+  const { title } = data;
+  if (!userId) {
+    throw new Error("No userId!");
+  }
+  if (data == null || title.trim() === "") {
+    throw new Error("Insufficient data to create new Set");
+  }
+
+  const newSetRef = db.collection(ROOT_COLLECTION.SETS).doc();
+
+  try {
+    db.runTransaction(async (t) => {
+      const res_set = await t.set(newSetRef, {
+        title: data.title,
+        userId: userId,
+      });
+
+      const res_user = await t.update(
+        db.collection(ROOT_COLLECTION.USERS).doc(userId),
+        {
+          set_ids: firebase.firestore.FieldValue.arrayUnion(newSetRef.id),
+        }
+      );
+
+      return res_set;
+    });
+  } catch (error) {
+    throw new Error("Transaction failed for addSet");
+  }
 };

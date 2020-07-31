@@ -5,7 +5,9 @@ import TextField from "@material-ui/core/TextField";
 import IconButton from "@material-ui/core/IconButton";
 import PlaylistAdd from "@material-ui/icons/PlaylistAdd";
 
-const AddSetForm = ({ user }) => {
+import { addSet } from "../../Firebase";
+
+const AddSetForm = ({ user, onNewSetAdded = (f) => f }) => {
   const [value, setValue] = useState("");
 
   const handleChange = (e) => {
@@ -16,9 +18,22 @@ const AddSetForm = ({ user }) => {
     e.preventDefault();
 
     if (user) {
-      const title = e.target.value;
+      const title = value;
       const userId = user.uid;
+
+      handleAddSet(userId, { title: title });
     }
+  };
+
+  const handleAddSet = async (userId, data) => {
+    let res;
+    try {
+      res = await addSet(userId, data);
+    } catch (error) {
+      console.log(error.message);
+    }
+    res && onNewSetAdded(res);
+    setValue("");
   };
 
   return (

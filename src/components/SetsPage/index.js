@@ -24,6 +24,10 @@ const SetsPage = () => {
     }
   }, [userInDb]);
 
+  const onNewSetAdded = (res) => {
+    // Do something when user adds a new set
+  };
+
   const switchEnum = (status) => {
     switch (status) {
       case SESSION_STATUS.ANON:
@@ -41,7 +45,7 @@ const SetsPage = () => {
     return (
       <>
         <Typography variant="h3">Sets</Typography>
-        <AddSetForm />
+        <AddSetForm user={user} onNewSetAdded={onNewSetAdded} />
         <SetsList user={user} />
       </>
     );
