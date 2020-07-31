@@ -101,4 +101,22 @@ export const addSet = (userId, data) => {
   }
 };
 
-export const removeSet = (userId, setId) => {};
+export const removeSet = (userId, setId) => {
+  if (!userId || !setId) {
+    throw new Error("Missing userId or setId, can't remove set");
+  }
+
+  const setRef = db.collection(ROOT_COLLECTION.SETS).doc(setId);
+
+  try {
+    db.runTransaction(async (t) => {
+      await t.delete(setRef);
+
+      await t.update(db.collection(ROOT_COLLECTION.USERS).doc(userId), {
+        set_ids: firebase.firestore.FieldValue.arrayRemove(setRef.id),
+      });
+    });
+  } catch (error) {
+    throw new Error("Transaction failed for removeSet");
+  }
+};

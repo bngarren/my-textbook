@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getSetsByIds } from "../../Firebase";
+import PropTypes from "prop-types";
+import { getSetsByIds, removeSet } from "../../Firebase";
 import Loading from "../../Loading";
 
 import List from "@material-ui/core/List";
@@ -9,6 +10,7 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import SubjectIcon from "@material-ui/icons/Subject";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import PlaylistAddCheckIcon from "@material-ui/icons/PlaylistAddCheck";
+import { ListItemSecondaryAction, IconButton } from "@material-ui/core";
 
 const SetsView = ({ user }) => {
   const [setIds, setSetIds] = useState(user && user.set_ids);
@@ -54,19 +56,37 @@ const SetsView = ({ user }) => {
     }
   }, [setIds]);
 
+  const onRemoveSet = (event, setId) => {
+    event.preventDefault();
+
+    if (setId && user) {
+      try {
+        removeSet(user.uid, setId);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
   if (!isLoading) {
-    return <SetsList sets={sets} />;
+    return <SetsList sets={sets} onRemoveSet={onRemoveSet} />;
   } else {
-    return <Loading />;
+    return (
+      <>
+        <Loading />
+        {sets && <SetsList sets={sets} />}
+      </>
+    );
   }
 };
 
-const SetsList = ({ sets }) => {
+const SetsList = ({ sets, onRemoveSet = (e, f) => f }) => {
   const activeId = "3TThsmMvOvl6tPtjy4od";
+
   return (
     <List>
       {sets.map((setItem) => (
-        <ListItem key={setItem.id}>
+        <ListItem key={setItem.id} divider={true}>
           <ListItemIcon>
             {setItem.id === activeId ? (
               <PlaylistAddCheckIcon color="primary" />
@@ -78,13 +98,20 @@ const SetsList = ({ sets }) => {
             primary={setItem.title}
             secondary={setItem.id === activeId && "active"}
           ></ListItemText>
-          <ListItemIcon>
-            <DeleteForeverIcon />
-          </ListItemIcon>
+          <ListItemSecondaryAction>
+            <IconButton onClick={(e) => onRemoveSet(e, setItem.id)}>
+              <DeleteForeverIcon />
+            </IconButton>
+          </ListItemSecondaryAction>
         </ListItem>
       ))}
     </List>
   );
+};
+
+SetsList.propTypes = {
+  sets: PropTypes.array,
+  onRemoveSet: PropTypes.func,
 };
 
 export default SetsView;
