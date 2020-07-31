@@ -60,14 +60,26 @@ const SetsList = ({ user }) => {
 
   useEffect(() => {
     if (!firebase) {
-      console.log("cant find firebase");
+      console.log("SetsPage.js: cant find firebase");
+      return;
+    }
+    if (setIds == null || !setIds.length) {
+      console.log(
+        "SetsPage.js: nothing in set_id array for this user in the database"
+      );
       return;
     }
     const getSets = async () => {
       const refs = await firebase.refsFromSetIds(setIds);
-      const docs = await firebase.setsFromRefs(refs).get();
+      const snapshot = await firebase.setsFromRefs(refs).get();
+      if (snapshot.empty) {
+        console.log(
+          "SetsPage.js: Did not find any documents in 'sets' that matched any item in 'set_id' array"
+        );
+      }
+      console.log("SetsPage.js: snapshot size", snapshot.size);
       let setsArray = [];
-      docs.forEach((doc) => {
+      snapshot.forEach((doc) => {
         setsArray.push({ ...doc.data(), id: doc.id });
       });
       setSets(setsArray);
@@ -85,7 +97,7 @@ const SetsList = ({ user }) => {
       </ul>
     );
   } else {
-    return "Loading user's sets";
+    return "Add a set.";
   }
 };
 

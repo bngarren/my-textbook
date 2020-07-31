@@ -41,7 +41,7 @@ export const useUserInDb = () => {
 };
 
 export const SESSION_STATUS = {
-  ANON: 0,
+  ANON: 0, //anonymous, i.e. not logged in
   INITIALIZING: 1,
   USER_READY: 2,
 };
@@ -61,7 +61,19 @@ export const useAuth = () => {
         .userByUid(user.uid)
         .get()
         .then((snapshot) => {
+          if (snapshot.empty) {
+            throw new Error(
+              "could find authenticated user in the 'users' firestore db"
+            );
+          }
           let docs = snapshot.docs;
+
+          if (docs.length > 1) {
+            throw new Error(
+              "more than 1 entry in the 'users' firestore db for this authenticated user"
+            );
+          }
+
           for (let doc of docs) {
             setUserState(doc.data());
             setStatus(SESSION_STATUS.USER_READY);
@@ -69,6 +81,12 @@ export const useAuth = () => {
               "useSession.js: getUser has completed, setStatus to USER_READY"
             );
           }
+        })
+        .catch((e) => {
+          console.log(e.message);
+
+          // NEED TO LOG THE USER OUT BECAUSE WE CANT CONTINUE WITH THESE ERRORS
+          firebase.doSignOut();
         });
     },
     [firebase]
@@ -80,7 +98,11 @@ export const useAuth = () => {
         setStatus(SESSION_STATUS.INITIALIZING);
         setSessionState(user);
         console.log("useSession.js: onChange, setStatus to INITIALIZING");
-        getUser(user);
+        try {
+          getUser(user);
+        } catch (error) {
+          console.log(error.message);
+        }
       } else {
         setStatus(SESSION_STATUS.ANON);
         setSessionState(null);
