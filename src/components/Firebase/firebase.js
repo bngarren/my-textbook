@@ -16,6 +16,7 @@ export const ROOT_COLLECTION = {
   USERS: "users",
   SETS: "sets",
   NOTES: "notes",
+  USER_SETS: "user-sets",
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -67,6 +68,10 @@ export const getSetsByIds = (ids) => {
     .collection(ROOT_COLLECTION.SETS)
     .where(firebase.firestore.FieldPath.documentId(), "in", refs)
     .get();
+};
+
+export const getUserSets = (userSetsId) => {
+  return db.collection(ROOT_COLLECTION.USER_SETS).doc(userSetsId).get();
 };
 
 export const addSet = (userId, data) => {

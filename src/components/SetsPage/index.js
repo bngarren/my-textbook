@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import Loading from "../Loading";
 import {
@@ -21,8 +21,7 @@ const SetsPage = () => {
 
   useEffect(() => {
     if (userDb) {
-      userDb && setUser(userDb);
-      //console.log(`SetsPage useEffect to setUser passing => ${userInDb}`);
+      setUser(userDb);
     }
   }, [userDb]);
 
@@ -33,7 +32,7 @@ const SetsPage = () => {
   const userReadyRender = () => {
     return (
       <>
-        <Typography variant="h3">Sets</Typography>
+        <Typography variant="h5">Your sets:</Typography>
         <AddSetForm user={user} onNewSetAdded={onNewSetAdded} />
         <SetsView user={user} />
       </>

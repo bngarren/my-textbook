@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import "../node_modules/react-slidedown/lib/slidedown.css";
 import App from "./components/App";
 import * as serviceWorker from "./serviceWorker";
 

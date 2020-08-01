@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import PropTypes from "prop-types";
-import { getSetsByIds, removeSet } from "../../Firebase";
+import { getUserSets, removeSet } from "../../Firebase";
 import Loading from "../../Loading";
 
 import List from "@material-ui/core/List";
@@ -16,49 +16,37 @@ import { ListItemSecondaryAction, IconButton } from "@material-ui/core";
 import { useUserClient, ACTION_TYPE } from "../../../hooks/useUserClient";
 
 const SetsView = ({ user }) => {
-  const [setIds, setSetIds] = useState(user && user.set_ids);
+  const userSetsId = useRef(user.userSetsId || null);
+  const userSet = useRef(null);
   const [sets, setSets] = useState(null);
   const [isLoading, setIsLoading] = useState(sets ? false : true);
   const [userClient, userClientDispatch] = useUserClient();
 
-  /* set_ids is the array of set IDs that is stored in each user document */
-
-  /* Update setIds state if the user prop changes */
+  /* Update userSets state if the user prop changes */
   useEffect(() => {
-    if (user) {
-      setSetIds(user.set_ids);
+    if (user != null && userSetsId != null) {
+      // Grab new group of sets from db collection (user-sets)
+      try {
+        getUserSets(userSetsId.current).then((snapshot) => {
+          if (snapshot.empty) {
+            throw new Error("snapshot empty");
+          }
+          userSet.current = snapshot.data();
+
+          if (shouldUpdate(userSet.current)) {
+            setSets(userSet.current.sets);
+          }
+        });
+      } catch (error) {
+        console.error("Couldn't get doc from user-sets: ", error.message);
+      }
     }
   }, [user]);
 
-  /* Grab new data if the set_ids state changes */
-  useEffect(() => {
-    const getSets = async () => {
-      console.log("SetsPage.js: gettings sets from set_ids");
-      const snapshot = await getSetsByIds(setIds);
-      let setsArray = [];
-      snapshot.forEach((doc) => {
-        setsArray.push({ ...doc.data(), id: doc.id });
-      });
-      setSets(setsArray);
-      setIsLoading(false);
-    };
-
-    if (setIds == null || !setIds.length) {
-      console.log(
-        "SetsPage.js: nothing in set_id array for this user in the database"
-      );
-      setIsLoading(false);
-      return;
-    } else {
-      try {
-        setIsLoading(true);
-        getSets();
-      } catch (e) {
-        console.log("SetsPage.js: error in getSets = ", e.message);
-        setIsLoading(false);
-      }
-    }
-  }, [setIds]);
+  const shouldUpdate = (userSet) => {
+    // Could check here to see if the new group of sets is different than the old group of sets
+    return true;
+  };
 
   const onRemoveSet = (event, setId) => {
     event.preventDefault();
@@ -146,3 +134,30 @@ SetsList.propTypes = {
 };
 
 export default SetsView;
+
+/* const getSets = async () => {
+  console.log("SetsView.js: gettings sets from set_ids");
+  const snapshot = await getSetsByIds(setIds);
+  let setsArray = [];
+  snapshot.forEach((doc) => {
+    setsArray.push({ ...doc.data(), id: doc.id });
+  });
+  setSets(setsArray);
+  setIsLoading(false);
+};
+
+if (setIds == null || !setIds.length) {
+  console.log(
+    "SetsPage.js: nothing in set_id array for this user in the database"
+  );
+  setIsLoading(false);
+  return;
+} else {
+  try {
+    setIsLoading(true);
+    getSets();
+  } catch (e) {
+    console.log("SetsPage.js: error in getSets = ", e.message);
+    setIsLoading(false);
+  }
+} */

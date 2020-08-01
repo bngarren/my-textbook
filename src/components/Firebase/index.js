@@ -11,6 +11,7 @@ import {
   onSnapshotUserById,
   getNoteById,
   getSetsByIds,
+  getUserSets,
   addSet,
   removeSet,
 } from "./firebase";
@@ -28,6 +29,7 @@ export {
   onSnapshotUserById,
   getNoteById,
   getSetsByIds,
+  getUserSets,
   addSet,
   removeSet,
 };
