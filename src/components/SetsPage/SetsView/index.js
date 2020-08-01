@@ -72,12 +72,15 @@ const SetsView = ({ user }) => {
     }
   };
 
-  const onMakeSetActive = (event, setId) => {
+  const onMakeSetActive = (event, setId, title = "Untitled") => {
     event.preventDefault();
 
     if (!setId) return;
 
-    userClientDispatch({ type: ACTION_TYPE.UPDATE_ACTIVE_SET, payload: setId });
+    userClientDispatch({
+      type: ACTION_TYPE.UPDATE_ACTIVE_SET,
+      payload: { setId: setId, title: title },
+    });
   };
 
   if (!isLoading) {
@@ -101,7 +104,7 @@ const SetsView = ({ user }) => {
 const SetsList = ({
   sets,
   onRemoveSet = (e, f) => f,
-  onMakeSetActive = (e, f) => f,
+  onMakeSetActive = (f) => f,
 }) => {
   const activeId = "3TThsmMvOvl6tPtjy4od";
 
@@ -121,7 +124,9 @@ const SetsList = ({
             secondary={setItem.id === activeId && "active"}
           ></ListItemText>
           <ListItemSecondaryAction>
-            <IconButton onClick={(e) => onMakeSetActive(e, setItem.id)}>
+            <IconButton
+              onClick={(e) => onMakeSetActive(e, setItem.id, setItem.title)}
+            >
               <DoneOutlineIcon />
             </IconButton>
             <IconButton onClick={(e) => onRemoveSet(e, setItem.id)}>

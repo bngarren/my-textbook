@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, { createContext, useContext, useReducer, useEffect } from "react";
+
+import { useUserDb } from "./useSession";
+import { updateActiveSet } from "../components/Firebase";
 
 export const ACTION_TYPE = Object.freeze({
   UPDATE_ACTIVE_SET: 0,
@@ -12,6 +15,7 @@ const userClientContext = createContext(initialState);
 
 const UserClientContext = ({ children }) => {
   const [state, dispatch] = useReducer(Reducer, initialState);
+  const { user } = useUserDb();
 
   return (
     <userClientContext.Provider value={[state, dispatch]}>
@@ -25,7 +29,8 @@ const Reducer = (state, action) => {
     case ACTION_TYPE.UPDATE_ACTIVE_SET:
       return {
         ...state,
-        activeSetId: action.payload,
+        activeSetId: action.payload.setId,
+        activeSetTitle: action.payload.title,
       };
     default:
       return state;

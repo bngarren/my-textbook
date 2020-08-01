@@ -18,6 +18,7 @@ import { doSignOut } from "../Firebase";
 import * as ROUTES from "../../constants/routes";
 
 import { useUserSession, useUserDb } from "../../hooks/useSession";
+import { useUserClient } from "../../hooks/useUserClient";
 
 const useStyles = makeStyles({
   root: {
@@ -47,11 +48,15 @@ const Navigation = () => {
   /* Get the user database data (i.e. from Firestore collection 'users')*/
   const { userDb: user } = useUserDb();
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
+  /* Get the user data that isn't database stored, i.e. specific to the local app 
+  Note that this hook uses a reducer so that it can be updated through certain actions */
+  const [userClient, dispatchUserClient] = useUserClient();
 
   const location = useLocation();
   const history = useHistory();
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -81,9 +86,10 @@ const Navigation = () => {
             <Link to={ROUTES.SETS_PAGE}>
               <Button>SETS</Button>
             </Link>
-            <Link to={ROUTES.NOTES_PAGE}>
-              <Button>NOTES</Button>
-            </Link>
+
+            {userClient.activeSetId !== null && (
+              <Button>{userClient.activeSetTitle}</Button>
+            )}
             <Divider orientation="vertical" variant="middle" flexItem />
             {userSession ? (
               <div className={classes.rightContent}>
