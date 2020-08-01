@@ -22,6 +22,8 @@ import {
   useOnAuthStateChanged,
 } from "../../hooks/useSession";
 
+import UserClientContext from "../../hooks/useUserClient";
+
 const useStyles = makeStyles({
   root: {},
   backdrop: {
@@ -67,17 +69,19 @@ const App = () => {
           userDbValue={userDbValue}
           userSessionStatusValue={userSessionStatus}
         >
-          <Navigation />
-          <Container className={classes.root}>
-            <Switch>
-              <Route exact path={ROUTES.HOME} component={HomePage} />
-              <Route path={ROUTES.SETS_PAGE} component={SetsPage} />
-              <Route path={ROUTES.NOTES_PAGE} component={NotesPage} />
-              <Route path={notePath} component={ViewNotePage} />
-              <Route path={ROUTES.SIGNIN_PAGE} component={SignInPage} />
-              <Route path={ROUTES.SIGNOUT_PAGE} component={SignOutPage} />
-            </Switch>
-          </Container>
+          <UserClientContext>
+            <Navigation />
+            <Container className={classes.root}>
+              <Switch>
+                <Route exact path={ROUTES.HOME} component={HomePage} />
+                <Route path={ROUTES.SETS_PAGE} component={SetsPage} />
+                <Route path={ROUTES.NOTES_PAGE} component={NotesPage} />
+                <Route path={notePath} component={ViewNotePage} />
+                <Route path={ROUTES.SIGNIN_PAGE} component={SignInPage} />
+                <Route path={ROUTES.SIGNOUT_PAGE} component={SignOutPage} />
+              </Switch>
+            </Container>
+          </UserClientContext>
         </UserSessionContext>
       </Router>
     );

@@ -9,13 +9,17 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import SubjectIcon from "@material-ui/icons/Subject";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
+import DoneOutlineIcon from "@material-ui/icons/DoneOutline";
 import PlaylistAddCheckIcon from "@material-ui/icons/PlaylistAddCheck";
 import { ListItemSecondaryAction, IconButton } from "@material-ui/core";
+
+import { useUserClient, ACTION_TYPE } from "../../../hooks/useUserClient";
 
 const SetsView = ({ user }) => {
   const [setIds, setSetIds] = useState(user && user.set_ids);
   const [sets, setSets] = useState(null);
   const [isLoading, setIsLoading] = useState(sets ? false : true);
+  const [userClient, userClientDispatch] = useUserClient();
 
   /* set_ids is the array of set IDs that is stored in each user document */
 
@@ -68,8 +72,22 @@ const SetsView = ({ user }) => {
     }
   };
 
+  const onMakeSetActive = (event, setId) => {
+    event.preventDefault();
+
+    if (!setId) return;
+
+    userClientDispatch({ type: ACTION_TYPE.UPDATE_ACTIVE_SET, payload: setId });
+  };
+
   if (!isLoading) {
-    return <SetsList sets={sets} onRemoveSet={onRemoveSet} />;
+    return (
+      <SetsList
+        sets={sets}
+        onRemoveSet={onRemoveSet}
+        onMakeSetActive={onMakeSetActive}
+      />
+    );
   } else {
     return (
       <>
@@ -80,7 +98,11 @@ const SetsView = ({ user }) => {
   }
 };
 
-const SetsList = ({ sets, onRemoveSet = (e, f) => f }) => {
+const SetsList = ({
+  sets,
+  onRemoveSet = (e, f) => f,
+  onMakeSetActive = (e, f) => f,
+}) => {
   const activeId = "3TThsmMvOvl6tPtjy4od";
 
   return (
@@ -99,6 +121,9 @@ const SetsList = ({ sets, onRemoveSet = (e, f) => f }) => {
             secondary={setItem.id === activeId && "active"}
           ></ListItemText>
           <ListItemSecondaryAction>
+            <IconButton onClick={(e) => onMakeSetActive(e, setItem.id)}>
+              <DoneOutlineIcon />
+            </IconButton>
             <IconButton onClick={(e) => onRemoveSet(e, setItem.id)}>
               <DeleteForeverIcon />
             </IconButton>
@@ -112,6 +137,7 @@ const SetsList = ({ sets, onRemoveSet = (e, f) => f }) => {
 SetsList.propTypes = {
   sets: PropTypes.array,
   onRemoveSet: PropTypes.func,
+  onMakeSetActive: PropTypes.func,
 };
 
 export default SetsView;
