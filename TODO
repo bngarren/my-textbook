@@ -9,3 +9,6 @@ Todo:
     Official (good read): https://firebase.google.com/docs/firestore/query-data/listen#view_changes_between_snapshots
     Explaining firestore caches here: https://medium.com/firebase-developers/firestore-clients-to-cache-or-not-to-cache-or-both-8f66a239c329
 ☐ See if there is a way to change how a user's sets are pulled from the database in SetsView. Can this be on with onSnapshot() listener??
+☐ Consider separing userContext into sessionContext and userInDbContext
+    In useSession.js, we are using a single userContext to house the data for the session (Firebase auth stuff) and the userInDb (our own info about the user in our database, like the sets they own). A potential issue with this is that when the nearest <Context.Provider> above the component updates (the "value" prop it's carrying changes), any component in the tree under it that is consuming it using useContext() will have a re-render triggered with the latest context value.
+    See https://reactjs.org/docs/hooks-reference.html#usecontext

@@ -5,7 +5,10 @@ import Navigation from "../Navigation";
 import * as ROUTES from "../../constants/routes";
 
 import Container from "@material-ui/core/Container";
+import Backdrop from "@material-ui/core/Backdrop";
 import { makeStyles } from "@material-ui/core/styles";
+
+import Loading from "../Loading";
 
 import HomePage from "../HomePage";
 import NotesPage from "../NotesPage";
@@ -14,10 +17,16 @@ import SignInPage from "../SignInPage";
 import SignOutPage from "../SignOutPage";
 import SetsPage from "../SetsPage";
 
-import { userContext, useAuth } from "../../hooks/useSession";
+import {
+  UserSessionContext,
+  useOnAuthStateChanged,
+} from "../../hooks/useSession";
 
 const useStyles = makeStyles({
   root: {},
+  backdrop: {
+    backgroundColor: "rgba(232, 232, 232, 0.2)",
+  },
 });
 
 const App = () => {
@@ -27,30 +36,52 @@ const App = () => {
   See https://reactrouter.com/web/example/url-params */
   const notePath = `${ROUTES.NOTE}/:id`;
 
-  const { status, userSession, userInDb } = useAuth();
-  const userContextValue = {
-    status: status,
+  const {
+    initializing,
+    userSession,
+    loadingUser,
+    userDb,
+    userSessionStatus,
+  } = useOnAuthStateChanged();
+
+  const userSessionValue = {
+    initializing: initializing,
     userSession: userSession,
-    userInDb: userInDb,
+  };
+  const userDbValue = {
+    loadingUser: loadingUser,
+    userDb: userDb,
   };
 
-  return (
-    <Router>
-      <userContext.Provider value={userContextValue}>
-        <Navigation />
-        <Container className={classes.root}>
-          <Switch>
-            <Route exact path={ROUTES.HOME} component={HomePage} />
-            <Route path={ROUTES.SETS_PAGE} component={SetsPage} />
-            <Route path={ROUTES.NOTES_PAGE} component={NotesPage} />
-            <Route path={notePath} component={ViewNotePage} />
-            <Route path={ROUTES.SIGNIN_PAGE} component={SignInPage} />
-            <Route path={ROUTES.SIGNOUT_PAGE} component={SignOutPage} />
-          </Switch>
-        </Container>
-      </userContext.Provider>
-    </Router>
-  );
+  if (initializing) {
+    return (
+      <Backdrop open={initializing} className={classes.backdrop}>
+        <Loading />
+      </Backdrop>
+    );
+  } else {
+    return (
+      <Router>
+        <UserSessionContext
+          userSessionValue={userSessionValue}
+          userDbValue={userDbValue}
+          userSessionStatusValue={userSessionStatus}
+        >
+          <Navigation />
+          <Container className={classes.root}>
+            <Switch>
+              <Route exact path={ROUTES.HOME} component={HomePage} />
+              <Route path={ROUTES.SETS_PAGE} component={SetsPage} />
+              <Route path={ROUTES.NOTES_PAGE} component={NotesPage} />
+              <Route path={notePath} component={ViewNotePage} />
+              <Route path={ROUTES.SIGNIN_PAGE} component={SignInPage} />
+              <Route path={ROUTES.SIGNOUT_PAGE} component={SignOutPage} />
+            </Switch>
+          </Container>
+        </UserSessionContext>
+      </Router>
+    );
+  }
 };
 
 export default App;

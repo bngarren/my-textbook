@@ -17,7 +17,7 @@ import { doSignOut } from "../Firebase";
 
 import * as ROUTES from "../../constants/routes";
 
-import { useSession, useUserInDb } from "../../hooks/useSession";
+import { useUserSession, useUserDb } from "../../hooks/useSession";
 
 const useStyles = makeStyles({
   root: {
@@ -43,9 +43,9 @@ const Navigation = () => {
   const classes = useStyles();
 
   /* Get the user session data (i.e. from Firebase authentication)*/
-  const sessionState = useSession();
+  const { userSession } = useUserSession();
   /* Get the user database data (i.e. from Firestore collection 'users')*/
-  const user = useUserInDb();
+  const { userDb: user } = useUserDb();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -85,7 +85,7 @@ const Navigation = () => {
               <Button>NOTES</Button>
             </Link>
             <Divider orientation="vertical" variant="middle" flexItem />
-            {sessionState.userSession ? (
+            {userSession ? (
               <div className={classes.rightContent}>
                 <IconButton onClick={handleMenu} label="test">
                   <AccountCircle />

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 
 import Loading from "../Loading";
 import {
-  useUserInDb,
-  useSession,
-  SESSION_STATUS,
+  useUserDb,
+  useUserSessionStatus,
+  USER_SESSION_STATUS,
 } from "../../hooks/useSession";
 
 import EnumState from "../EnumState";
@@ -15,16 +15,16 @@ import SetsView from "./SetsView";
 import Typography from "@material-ui/core/Typography";
 
 const SetsPage = () => {
-  const userInDb = useUserInDb();
-  const [user, setUser] = useState(userInDb && userInDb);
-  const sessionState = useSession();
+  const { userDb } = useUserDb();
+  const [user, setUser] = useState(userDb && userDb);
+  const userSessionStatus = useUserSessionStatus();
 
   useEffect(() => {
-    if (userInDb) {
-      userInDb && setUser(userInDb);
+    if (userDb) {
+      userDb && setUser(userDb);
       //console.log(`SetsPage useEffect to setUser passing => ${userInDb}`);
     }
-  }, [userInDb]);
+  }, [userDb]);
 
   const onNewSetAdded = (res) => {
     // Do something when user adds a new set
@@ -43,20 +43,20 @@ const SetsPage = () => {
   return (
     <div>
       <EnumState
-        currentStatus={sessionState.status}
-        forStatus={SESSION_STATUS.ANON}
+        currentStatus={userSessionStatus}
+        forStatus={USER_SESSION_STATUS.ANON}
       >
         Need to log in
       </EnumState>
       <EnumState
-        currentStatus={sessionState.status}
-        forStatus={SESSION_STATUS.INITIALIZING}
+        currentStatus={userSessionStatus}
+        forStatus={USER_SESSION_STATUS.USER_LOADING}
       >
         <Loading />
       </EnumState>
       <EnumState
-        currentStatus={sessionState.status}
-        forStatus={SESSION_STATUS.USER_READY}
+        currentStatus={userSessionStatus}
+        forStatus={USER_SESSION_STATUS.USER_READY}
       >
         {userReadyRender()}
       </EnumState>
