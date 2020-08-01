@@ -1,21 +1,28 @@
-import React, { createContext, useContext, useReducer, useEffect } from "react";
+import React, { createContext, useContext, useReducer } from "react";
+
+import Cookies from "universal-cookie";
 
 import { useUserDb } from "./useSession";
-import { updateActiveSet } from "../components/Firebase";
 
 export const ACTION_TYPE = Object.freeze({
   UPDATE_ACTIVE_SET: 0,
 });
 
+const cookies = new Cookies(); // universal-cookie module
+
+/* The userClientContext carries the Cookies object in it */
 const initialState = {
-  activeSetId: null,
+  cookies: cookies,
+  activeSet: {
+    setId: cookies.get("activeSetId") || null,
+    title: cookies.get("activeSetTitle") || null,
+  },
 };
 
 const userClientContext = createContext(initialState);
 
 const UserClientContext = ({ children }) => {
   const [state, dispatch] = useReducer(Reducer, initialState);
-  const { user } = useUserDb();
 
   return (
     <userClientContext.Provider value={[state, dispatch]}>
@@ -24,13 +31,20 @@ const UserClientContext = ({ children }) => {
   );
 };
 
+/* The reducer is able to take previous state and apply actions, returning an updated state */
 const Reducer = (state, action) => {
   switch (action.type) {
+    /* To update the user's active set, we do 2 things. We store the info in cookies so it can persist between browser sessions/refrehses
+    and we store the same info in the top level of state (i.e. in the activeSet map) so that it can be quickly referenced in components needing it */
     case ACTION_TYPE.UPDATE_ACTIVE_SET:
+      state.cookies.set("activeSetId", action.payload.setId);
+      state.cookies.set("activeSetTitle", action.payload.title);
       return {
         ...state,
-        activeSetId: action.payload.setId,
-        activeSetTitle: action.payload.title,
+        activeSet: {
+          setId: action.payload.setId,
+          title: action.payload.title,
+        },
       };
     default:
       return state;

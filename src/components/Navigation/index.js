@@ -9,6 +9,7 @@ import Divider from "@material-ui/core/Divider";
 import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
+import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -33,6 +34,10 @@ const useStyles = makeStyles({
   rightContent: {
     display: "flex",
     marginLeft: "auto",
+  },
+  doubleArrow: {
+    fontSize: "small",
+    color: "green",
   },
   usernameText: {
     color: "black",
@@ -87,8 +92,11 @@ const Navigation = () => {
               <Button>SETS</Button>
             </Link>
 
-            {userClient.activeSetId !== null && (
-              <Button>{userClient.activeSetTitle}</Button>
+            {userClient.activeSet.setId !== null && (
+              <>
+                <DoubleArrowIcon className={classes.doubleArrow} />
+                <Button>{userClient.activeSet.title}</Button>
+              </>
             )}
             <Divider orientation="vertical" variant="middle" flexItem />
             {userSession ? (
