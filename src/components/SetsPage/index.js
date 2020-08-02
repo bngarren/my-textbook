@@ -9,7 +9,6 @@ import {
 
 import EnumState from "../EnumState";
 
-import AddSetForm from "./AddSet";
 import SetsView from "./SetsView";
 
 import Typography from "@material-ui/core/Typography";
@@ -33,7 +32,6 @@ const SetsPage = () => {
     return (
       <>
         <Typography variant="h5">Your sets:</Typography>
-        <AddSetForm user={user} onNewSetAdded={onNewSetAdded} />
         <SetsView user={user} />
       </>
     );

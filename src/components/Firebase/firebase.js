@@ -70,11 +70,11 @@ export const getSetsByIds = (ids) => {
     .get();
 };
 
-export const getUserSets = (userSetsId) => {
-  return db.collection(ROOT_COLLECTION.USER_SETS).doc(userSetsId).get();
+export const getUserSets = async (userSetsId) => {
+  return await db.collection(ROOT_COLLECTION.USER_SETS).doc(userSetsId).get();
 };
 
-export const addSet = (userId, data) => {
+export const addSet = async (userId, userSetsId = null, data) => {
   const { title } = data;
   if (!userId) {
     throw new Error("No userId!");
@@ -83,45 +83,65 @@ export const addSet = (userId, data) => {
     throw new Error("Insufficient data to create new Set");
   }
 
-  const newSetRef = db.collection(ROOT_COLLECTION.SETS).doc();
-
+  // ensure atomicity
   try {
-    db.runTransaction(async (t) => {
+    await db.runTransaction(async (t) => {
+      // locate the user's userSets doc or, if null, a new userSet doc will be generated below
+      const userSetsRef =
+        userSetsId !== null
+          ? db.collection(ROOT_COLLECTION.USER_SETS).doc(userSetsId)
+          : null;
+
+      // create the doc for this new set in the "sets" collection
+      const newSetRef = db.collection(ROOT_COLLECTION.SETS).doc();
+
+      // populate the fields of the net set in the "sets" collection
       const res_set = await t.set(newSetRef, {
         title: data.title,
         userId: userId,
       });
 
-      const res_user = await t.update(
-        db.collection(ROOT_COLLECTION.USERS).doc(userId),
-        {
-          set_ids: firebase.firestore.FieldValue.arrayUnion(newSetRef.id),
-        }
-      );
+      const newSetInUserSets = {
+        setId: newSetRef.id,
+        title: data.title,
+      };
 
-      return res_set;
+      let res_userSet;
+      // update the user's specific "userSets" document with the new set information
+      res_userSet = await t.set(
+        userSetsRef,
+        {
+          sets: { [newSetRef.id]: { title: title } },
+        },
+        { merge: true }
+      );
     });
   } catch (error) {
     throw new Error("Transaction failed for addSet");
   }
+  return true;
 };
 
-export const removeSet = (userId, setId) => {
-  if (!userId || !setId) {
-    throw new Error("Missing userId or setId, can't remove set");
+export const removeSet = async (userSetsId, setId) => {
+  if (!userSetsId || !setId) {
+    throw new Error("Missing userSetsId or setId, can't remove set");
   }
 
-  const setRef = db.collection(ROOT_COLLECTION.SETS).doc(setId);
-
   try {
-    db.runTransaction(async (t) => {
+    await db.runTransaction(async (t) => {
+      const setRef = db.collection(ROOT_COLLECTION.SETS).doc(setId);
+      const userSetsRef = db
+        .collection(ROOT_COLLECTION.USER_SETS)
+        .doc(userSetsId);
+
       await t.delete(setRef);
 
-      await t.update(db.collection(ROOT_COLLECTION.USERS).doc(userId), {
-        set_ids: firebase.firestore.FieldValue.arrayRemove(setRef.id),
+      await t.update(userSetsRef, {
+        [`sets.${setId}`]: firebase.firestore.FieldValue.delete(),
       });
     });
   } catch (error) {
-    throw new Error("Transaction failed for removeSet");
+    throw new Error("Transaction failed for removeSet: ", error.message);
   }
+  return true;
 };

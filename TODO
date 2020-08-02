@@ -1,5 +1,10 @@
 
 Todo:
+
+CRITICAL:
+☐ When a set is modified (e.g., title is changed or set is deleted), if this set was the active set we need to make sure the cookie and userClientContext are updated
+
+
 ☐ Surround every call to a firebase function in a try/catch block because I'm not catching these on the firebase.js end just throwing them
 ☐ Use react-window with Mui List to implement a 'virtualized list'
     This would render only part of a large data set (just enough to fill the viewport)

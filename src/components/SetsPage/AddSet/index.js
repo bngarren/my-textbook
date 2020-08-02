@@ -20,19 +20,20 @@ const AddSetForm = ({ user, onNewSetAdded = (f) => f }) => {
     if (user) {
       const title = value;
       const userId = user.uid;
+      const userSetsId = user.userSetsId || null;
 
-      handleAddSet(userId, { title: title });
+      handleAddSet(userId, userSetsId, { title: title });
     }
   };
 
-  const handleAddSet = async (userId, data) => {
-    let res;
+  const handleAddSet = (userId, userSetsId, data) => {
     try {
-      res = await addSet(userId, data);
+      addSet(userId, userSetsId, data).then((res) => {
+        onNewSetAdded(res);
+      });
     } catch (error) {
       console.log(error.message);
     }
-    res && onNewSetAdded(res);
     setValue("");
   };
 

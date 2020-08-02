@@ -15,10 +15,13 @@ import { ListItemSecondaryAction, IconButton } from "@material-ui/core";
 
 import { useUserClient, ACTION_TYPE } from "../../../hooks/useUserClient";
 
+import AddSetForm from "../AddSet";
+
 const SetsView = ({ user }) => {
   const userSetsId = useRef(user.userSetsId || null);
   const userSet = useRef(null);
   const [sets, setSets] = useState(null);
+  const [refresh, setRefresh] = useState(false); // used to trigger re-render for SetsView
   const [isLoading, setIsLoading] = useState(sets ? false : true);
   const [userClient, userClientDispatch] = useUserClient();
 
@@ -26,41 +29,73 @@ const SetsView = ({ user }) => {
   useEffect(() => {
     if (user != null && userSetsId != null) {
       // Grab new group of sets from db collection (user-sets)
-      try {
-        getUserSets(userSetsId.current).then((snapshot) => {
-          if (snapshot.empty) {
+
+      getUserSets(userSetsId.current)
+        .then((snapshot) => {
+          if (!snapshot.exists) {
             throw new Error("snapshot empty");
           }
           userSet.current = snapshot.data();
+          console.debug(
+            "SetsView.js: getUserSets (database), snapshot.data() = ",
+            snapshot.data()
+          );
+
+          const res = setsArrayFromObject(snapshot.data().sets);
+
+          console.debug("SetsView.js: res = ", res);
 
           if (shouldUpdate(userSet.current)) {
-            setSets(userSet.current.sets);
+            setSets(res);
+            setIsLoading(false);
           }
+        })
+        .catch((e) => {
+          console.error("Couldn't get doc from user-sets: ", e.message);
         });
-      } catch (error) {
-        console.error("Couldn't get doc from user-sets: ", error.message);
-      }
     }
-  }, [user]);
+  }, [user, refresh]);
+
+  const setsArrayFromObject = (setsObject) => {
+    const entries = Object.entries(setsObject);
+
+    let res = [];
+
+    for (const [key, value] of entries) {
+      res.push({ setId: key, data: value });
+    }
+
+    return res;
+  };
 
   const shouldUpdate = (userSet) => {
     // Could check here to see if the new group of sets is different than the old group of sets
     return true;
   };
 
+  const onNewSetAdded = (updatedUserSet) => {
+    if (updatedUserSet) {
+      setRefresh(!refresh);
+    }
+  };
+
   const onRemoveSet = (event, setId) => {
     event.preventDefault();
 
-    if (setId && user) {
+    if (userSetsId.current && setId) {
       try {
-        removeSet(user.uid, setId);
+        removeSet(userSetsId.current, setId).then(() => {
+          setRefresh(!refresh);
+
+          // now we need to change the active set if this set we deleted was active
+        });
       } catch (error) {
         console.log(error);
       }
     }
   };
 
-  const onMakeSetActive = (event, setId, title = "Untitled") => {
+  const onMakeSetActive = (event, setId, title = "!Error!") => {
     event.preventDefault();
 
     if (!setId) return;
@@ -73,11 +108,16 @@ const SetsView = ({ user }) => {
 
   if (!isLoading) {
     return (
-      <SetsList
-        sets={sets}
-        onRemoveSet={onRemoveSet}
-        onMakeSetActive={onMakeSetActive}
-      />
+      <>
+        <AddSetForm user={user} onNewSetAdded={onNewSetAdded} />
+        {
+          <SetsList
+            sets={sets}
+            onRemoveSet={onRemoveSet}
+            onMakeSetActive={onMakeSetActive}
+          />
+        }
+      </>
     );
   } else {
     return (
@@ -99,25 +139,27 @@ const SetsList = ({
   return (
     <List>
       {sets.map((setItem) => (
-        <ListItem key={setItem.id} divider={true}>
+        <ListItem key={setItem.setId} divider={true}>
           <ListItemIcon>
-            {setItem.id === activeId ? (
+            {setItem.setId === activeId ? (
               <PlaylistAddCheckIcon color="primary" />
             ) : (
               <SubjectIcon />
             )}
           </ListItemIcon>
           <ListItemText
-            primary={setItem.title}
-            secondary={setItem.id === activeId && "active"}
+            primary={setItem.data.title}
+            secondary={setItem.setId === activeId && "active"}
           ></ListItemText>
           <ListItemSecondaryAction>
             <IconButton
-              onClick={(e) => onMakeSetActive(e, setItem.id, setItem.title)}
+              onClick={(e) =>
+                onMakeSetActive(e, setItem.setId, setItem.data.title)
+              }
             >
               <DoneOutlineIcon />
             </IconButton>
-            <IconButton onClick={(e) => onRemoveSet(e, setItem.id)}>
+            <IconButton onClick={(e) => onRemoveSet(e, setItem.setId)}>
               <DeleteForeverIcon />
             </IconButton>
           </ListItemSecondaryAction>
