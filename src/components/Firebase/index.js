@@ -10,10 +10,11 @@ import {
   userByUid,
   onSnapshotUserById,
   getNoteById,
-  getSetsByIds,
+  getSetById,
   getUserSets,
   addSet,
   removeSet,
+  addNote,
 } from "./firebase";
 
 export { FirebaseContext, useFirebase };
@@ -28,8 +29,9 @@ export {
   userByUid,
   onSnapshotUserById,
   getNoteById,
-  getSetsByIds,
+  getSetById,
   getUserSets,
   addSet,
   removeSet,
+  addNote,
 };

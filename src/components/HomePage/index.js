@@ -18,7 +18,7 @@ const HomePage = () => {
   const classes = useStyles();
 
   // This is just hard coded link for development
-  const noteLink = `${ROUTES.NOTE}/cbNW3nAieisZyUuXF8pN`;
+  const noteLink = `${ROUTES.NOTE_PAGE}/cbNW3nAieisZyUuXF8pN`;
 
   return (
     <Container className={classes.root}>

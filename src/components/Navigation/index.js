@@ -97,7 +97,9 @@ const Navigation = () => {
             userClient.activeSet.title == null ? null : (
               <>
                 <DoubleArrowIcon className={classes.doubleArrow} />
-                <Button>{userClient.activeSet.title}</Button>
+                <Link to={`${ROUTES.SET_PAGE}/${userClient.activeSet.setId}`}>
+                  <Button>{userClient.activeSet.title}</Button>
+                </Link>
               </>
             )}
 

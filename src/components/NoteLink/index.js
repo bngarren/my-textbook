@@ -6,7 +6,7 @@ const NoteLink = ({ noteId, children }) => {
   let path = "/";
 
   if (noteId) {
-    path = `${ROUTES.NOTE}/${noteId}`;
+    path = `${ROUTES.NOTE_PAGE}/${noteId}`;
   }
 
   return <Link to={path}>{children}</Link>;

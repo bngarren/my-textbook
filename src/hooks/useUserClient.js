@@ -22,6 +22,10 @@ const initialState = {
 
 const userClientContext = createContext(initialState);
 
+export const useUserClient = () => {
+  return useContext(userClientContext);
+};
+
 const UserClientContext = ({ children }) => {
   const [state, dispatch] = useReducer(Reducer, initialState);
 
@@ -60,10 +64,6 @@ const Reducer = (state, action) => {
     default:
       return state;
   }
-};
-
-export const useUserClient = () => {
-  return useContext(userClientContext);
 };
 
 export default UserClientContext;

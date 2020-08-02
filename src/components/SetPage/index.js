@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 
 import Loading from "../Loading";
 import {
@@ -7,26 +8,27 @@ import {
   USER_SESSION_STATUS,
 } from "../../hooks/useSession";
 
-import EnumState from "../EnumState";
+import { useUserClient } from "../../hooks/useUserClient";
 
-import SetsView from "./SetsView";
+import NotesView from "./NotesView";
+import EnumState from "../EnumState";
 
 import Typography from "@material-ui/core/Typography";
 
-const SetsPage = () => {
+const SetPage = () => {
   const { userDb: user } = useUserDb(); // get our user info
   const userSessionStatus = useUserSessionStatus();
+  const { id: setId } = useParams(); // get the setId from the last part of the URL
 
-  // TODO: need UI feedback when completed
-  const onNewSetAdded = (res) => {
-    // Do something when user adds a new set
-  };
+  const [userClient, userClientDispatch] = useUserClient(); // tracks which set is "active"
 
   const userReadyRender = () => {
     return (
       <>
-        <Typography variant="h5">Your sets:</Typography>
-        <SetsView user={user} />
+        <Typography variant="h6">
+          {userClient.activeSet && userClient.activeSet.title}
+        </Typography>
+        <NotesView setId={setId} user={user} />
       </>
     );
   };
@@ -55,4 +57,4 @@ const SetsPage = () => {
   );
 };
 
-export default SetsPage;
+export default SetPage;

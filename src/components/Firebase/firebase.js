@@ -57,17 +57,20 @@ export const onSnapshotUserById = (id, callback) => {
     });
 };
 
-export const getNoteById = (noteId) => {
-  return db.collection(ROOT_COLLECTION.NOTES).doc(noteId).get();
+export const getNoteById = async (noteId) => {
+  try {
+    return await db.collection(ROOT_COLLECTION.NOTES).doc(noteId).get();
+  } catch (error) {
+    throw new Error(`Failed getNoteById: ${error.message}`);
+  }
 };
 
-export const getSetsByIds = (ids) => {
-  const refs = ids.map((id) => db.doc(`${ROOT_COLLECTION.SETS}/${id}`));
-
-  return db
-    .collection(ROOT_COLLECTION.SETS)
-    .where(firebase.firestore.FieldPath.documentId(), "in", refs)
-    .get();
+export const getSetById = async (setId) => {
+  try {
+    return await db.collection(ROOT_COLLECTION.SETS).doc(setId).get();
+  } catch (error) {
+    throw new Error(`Failed getSetById: ${error.message}`);
+  }
 };
 
 export const getUserSets = async (userSetsId) => {
@@ -95,15 +98,15 @@ export const addSet = async (userId, userSetsId = null, data) => {
       // create the doc for this new set in the "sets" collection
       const newSetRef = db.collection(ROOT_COLLECTION.SETS).doc();
 
-      // populate the fields of the net set in the "sets" collection
+      // populate the fields of the new set in the "sets" collection
       const res_set = await t.set(newSetRef, {
-        title: data.title,
+        title: title,
         userId: userId,
       });
 
       const newSetInUserSets = {
         setId: newSetRef.id,
-        title: data.title,
+        title: title,
       };
 
       let res_userSet;
@@ -117,7 +120,7 @@ export const addSet = async (userId, userSetsId = null, data) => {
       );
     });
   } catch (error) {
-    throw new Error("Transaction failed for addSet");
+    throw new Error("Transaction failed for addSet: ", error.message);
   }
   return true;
 };
@@ -142,6 +145,58 @@ export const removeSet = async (userSetsId, setId) => {
     });
   } catch (error) {
     throw new Error("Transaction failed for removeSet: ", error.message);
+  }
+  return true;
+};
+
+export const addNote = async (userId, setId = null, data) => {
+  const { title } = data;
+
+  if (userId == null) {
+    throw new Error("No userId!");
+  } else if (setId == null) {
+    throw new Error("No setId!");
+  }
+  if (data == null || title.trim() === "") {
+    throw new Error("Insufficient data to create new Note");
+  }
+
+  // ensure atomicity
+  /* 1. Need to add new note to Notes collection 
+     2. Need to add mapping to the Sets document pertaning to this set under the notes map 
+     */
+  try {
+    await db.runTransaction(async (t) => {
+      // create the doc for this new note in the "notes" collection
+      const newNoteRef = db.collection(ROOT_COLLECTION.NOTES).doc();
+
+      // populate the fields of the new note in the "notes" collection
+      const res_note = await t.set(newNoteRef, {
+        title: title,
+        userId: userId,
+        setId: setId,
+      });
+
+      // get the set ref
+      const setRef = db.collection(ROOT_COLLECTION.SETS).doc(setId);
+
+      // make the new data object for the note
+      const newNoteInSet = {
+        title: title,
+      };
+
+      // now update this set's document with the new note
+      let res_updatedSet;
+      res_updatedSet = await t.set(
+        setRef,
+        {
+          notes: { [setRef.id]: newNoteInSet },
+        },
+        { merge: true }
+      );
+    });
+  } catch (error) {
+    throw new Error("Transaction failed for addNote: ", error.message);
   }
   return true;
 };

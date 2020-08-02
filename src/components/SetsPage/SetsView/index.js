@@ -29,11 +29,11 @@ const SetsView = ({ user }) => {
   useEffect(() => {
     if (user != null && userSetsId != null) {
       // Grab new group of sets from db collection (user-sets)
-
+      setIsLoading(true);
       getUserSets(userSetsId.current)
         .then((snapshot) => {
           if (!snapshot.exists) {
-            throw new Error("snapshot empty");
+            throw new Error("SetsView.js: snapshot empty");
           }
           userSet.current = snapshot.data();
           console.debug(
@@ -51,7 +51,10 @@ const SetsView = ({ user }) => {
           }
         })
         .catch((e) => {
-          console.error("Couldn't get doc from user-sets: ", e.message);
+          console.error(
+            "SetsView.js: Couldn't get doc from user-sets: ",
+            e.message
+          );
         });
     }
   }, [user, refresh]);

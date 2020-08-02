@@ -11,11 +11,11 @@ import { makeStyles } from "@material-ui/core/styles";
 import Loading from "../Loading";
 
 import HomePage from "../HomePage";
-import NotesPage from "../NotesPage";
 import ViewNotePage from "../ViewNote";
 import SignInPage from "../SignInPage";
 import SignOutPage from "../SignOutPage";
 import SetsPage from "../SetsPage";
+import SetPage from "../SetPage";
 
 import {
   UserSessionContext,
@@ -36,7 +36,9 @@ const App = () => {
 
   /* We want to match to the note/id 
   See https://reactrouter.com/web/example/url-params */
-  const notePath = `${ROUTES.NOTE}/:id`;
+  const notePath = `${ROUTES.NOTE_PAGE}/:id`;
+
+  const setPath = `${ROUTES.SET_PAGE}/:id`;
 
   const {
     initializing,
@@ -75,7 +77,7 @@ const App = () => {
               <Switch>
                 <Route exact path={ROUTES.HOME} component={HomePage} />
                 <Route path={ROUTES.SETS_PAGE} component={SetsPage} />
-                <Route path={ROUTES.NOTES_PAGE} component={NotesPage} />
+                <Route path={setPath} component={SetPage} />
                 <Route path={notePath} component={ViewNotePage} />
                 <Route path={ROUTES.SIGNIN_PAGE} component={SignInPage} />
                 <Route path={ROUTES.SIGNOUT_PAGE} component={SignOutPage} />

@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import FormControl from "@material-ui/core/FormControl";
 import TextField from "@material-ui/core/TextField";
 import IconButton from "@material-ui/core/IconButton";
-import PlaylistAdd from "@material-ui/icons/PlaylistAdd";
+import NoteAddIcon from "@material-ui/icons/NoteAdd";
 
-import { addSet } from "../../Firebase";
+import { addNote } from "../../Firebase";
 
-const AddSetForm = ({ user, onNewSetAdded = (f) => f }) => {
+const AddNoteForm = ({ user, setId, onNewNoteAdded = (f) => f }) => {
   const [value, setValue] = useState("");
 
   const handleChange = (e) => {
@@ -17,22 +17,21 @@ const AddSetForm = ({ user, onNewSetAdded = (f) => f }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (user) {
+    if (user && setId) {
       const title = value;
       const userId = user.uid;
-      const userSetsId = user.userSetsId || null;
 
-      handleAddSet(userId, userSetsId, { title: title });
+      handleAddNote(userId, setId, { title: title });
     }
   };
 
-  const handleAddSet = (userId, userSetsId, data) => {
+  const handleAddNote = (userId, userSetsId, data) => {
     try {
-      addSet(userId, userSetsId, data).then((res) => {
-        onNewSetAdded(res); //res is true/false if transaction completed
+      addNote(userId, setId, data).then((res) => {
+        onNewNoteAdded(res); //res is true/false if transaction completed
       });
     } catch (error) {
-      console.error("AddSet.js: Error adding new set: ", error.message);
+      console.error("AddNote.js: Error adding new note: ", error.message);
     }
     setValue("");
   };
@@ -43,18 +42,18 @@ const AddSetForm = ({ user, onNewSetAdded = (f) => f }) => {
         <FormControl error>
           <TextField
             variant="outlined"
-            label="Add Set"
+            label="Add Note"
             value={value}
             onChange={handleChange}
             size="small"
           />
         </FormControl>
         <IconButton type="submit">
-          <PlaylistAdd />
+          <NoteAddIcon />
         </IconButton>
       </form>
     </>
   );
 };
 
-export default AddSetForm;
+export default AddNoteForm;

@@ -2,18 +2,24 @@
 Todo:
 
 CRITICAL:
-☐ When a set is modified (e.g., title is changed or set is deleted), if this set was the active set we need to make sure the cookie and userClientContext are updated
+✔ When a set is modified (e.g., title is changed or set is deleted), if this set was the active set we need to make sure the cookie and userClientContext are updated @done(20-08-02 04:04)
 
 
-☐ Surround every call to a firebase function in a try/catch block because I'm not catching these on the firebase.js end just throwing them
+✘ Surround every call to a firebase function in a try/catch block because I'm not catching these on the firebase.js end just throwing them @cancelled(20-08-02 04:04)
+    ☐  Instead, I need to really think of how best to throw errors in the firebase functions and just make sure they are caught someplace depending on how critical the errors are. Many of these caught errors need user feedback/UI to let them know the action didn't complete
+
 ☐ Use react-window with Mui List to implement a 'virtualized list'
     This would render only part of a large data set (just enough to fill the viewport)
     https://github.com/bvaughn/react-window
+
 ☐ Look into using cache with Firestore to possibly save on reads
     May be able to perform a set of operations in this way: Grab fresh data from server (e.g. user's Sets) and populate a view, then if user adds/deletes/updates, maybe do this only to the local cache for a period of time so that there isnt a new write and read to the server for every single step. Then at say 2 min, the real add/del/update request can be sent to the server
     Official (good read): https://firebase.google.com/docs/firestore/query-data/listen#view_changes_between_snapshots
     Explaining firestore caches here: https://medium.com/firebase-developers/firestore-clients-to-cache-or-not-to-cache-or-both-8f66a239c329
-☐ See if there is a way to change how a user's sets are pulled from the database in SetsView. Can this be on with onSnapshot() listener??
+
+✘ See if there is a way to change how a user's sets are pulled from the database in SetsView. Can this be on with onSnapshot() listener?? @cancelled(20-08-02 04:06)
+    ✔ For now I have made a 'user-sets' collection in the database that has just 1 document per user and lists out the sets with some quick info such as set title, etc. that can be displayed on the SetsPage @done(20-08-02 04:06)
+    
 ☐ Consider separing userContext into sessionContext and userInDbContext
     In useSession.js, we are using a single userContext to house the data for the session (Firebase auth stuff) and the userInDb (our own info about the user in our database, like the sets they own). A potential issue with this is that when the nearest <Context.Provider> above the component updates (the "value" prop it's carrying changes), any component in the tree under it that is consuming it using useContext() will have a re-render triggered with the latest context value.
     See https://reactjs.org/docs/hooks-reference.html#usecontext

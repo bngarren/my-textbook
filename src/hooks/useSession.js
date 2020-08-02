@@ -14,9 +14,9 @@ import {
 } from "../components/Firebase";
 
 export const USER_SESSION_STATUS = Object.freeze({
-  ANON: 0,
-  USER_LOADING: 1,
-  USER_READY: 2,
+  ANON: "ANON",
+  USER_LOADING: "USER_LOADING",
+  USER_READY: "USER_READY",
 });
 
 /* 
@@ -96,7 +96,7 @@ export const useOnAuthStateChanged = () => {
   /* Listener for our onSnapshot query.
   Must store it in a ref so that it can be unsubcribed on unmount
   Default: empty function */
-  const userObserverRef = useRef(() => () => null);
+  const userObserverRef = useRef(null);
 
   const onChange = useCallback((user) => {
     if (user) {
@@ -153,7 +153,13 @@ export const useOnAuthStateChanged = () => {
 
   useEffect(() => {
     //unsubscribe to the listener when unmounting
-    return () => userObserverRef();
+    return () => {
+      if (userObserverRef.current !== null) {
+        return userObserverRef.current();
+      } else {
+        return null;
+      }
+    };
   }, []);
 
   const getUserSessionStatus = () => {
