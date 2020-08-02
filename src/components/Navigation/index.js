@@ -92,12 +92,15 @@ const Navigation = () => {
               <Button>SETS</Button>
             </Link>
 
-            {userClient.activeSet.setId !== null && (
+            {!userSession ||
+            userClient.activeSet.setId == null ||
+            userClient.activeSet.title == null ? null : (
               <>
                 <DoubleArrowIcon className={classes.doubleArrow} />
                 <Button>{userClient.activeSet.title}</Button>
               </>
             )}
+
             <Divider orientation="vertical" variant="middle" flexItem />
             {userSession ? (
               <div className={classes.rightContent}>

@@ -6,6 +6,7 @@ import { useUserDb } from "./useSession";
 
 export const ACTION_TYPE = Object.freeze({
   UPDATE_ACTIVE_SET: 0,
+  CLEAR_ACTIVE_SET: 1,
 });
 
 const cookies = new Cookies(); // universal-cookie module
@@ -44,6 +45,16 @@ const Reducer = (state, action) => {
         activeSet: {
           setId: action.payload.setId,
           title: action.payload.title,
+        },
+      };
+    case ACTION_TYPE.CLEAR_ACTIVE_SET:
+      state.cookies.set("activeSetId", null);
+      state.cookies.set("activeSetTitle", null);
+      return {
+        ...state,
+        activeSet: {
+          setId: null,
+          title: null,
         },
       };
     default:

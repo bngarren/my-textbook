@@ -79,31 +79,45 @@ const SetsView = ({ user }) => {
     }
   };
 
+  // REMOVE SET
   const onRemoveSet = (event, setId) => {
     event.preventDefault();
 
     if (userSetsId.current && setId) {
-      try {
-        removeSet(userSetsId.current, setId).then(() => {
+      removeSet(userSetsId.current, setId)
+        .then(() => {
           setRefresh(!refresh);
 
           // now we need to change the active set if this set we deleted was active
+          if (userClient.activeSet.setId === setId) {
+            userClientDispatch({
+              type: ACTION_TYPE.CLEAR_ACTIVE_SET,
+            });
+          }
+        })
+        .catch((error) => {
+          console.error(error);
         });
-      } catch (error) {
-        console.log(error);
-      }
     }
   };
 
-  const onMakeSetActive = (event, setId, title = "!Error!") => {
+  // TOGGLE ACTIVE SET
+  const onToggleActiveSet = (event, setId, title = "!Error!") => {
     event.preventDefault();
 
     if (!setId) return;
 
-    userClientDispatch({
-      type: ACTION_TYPE.UPDATE_ACTIVE_SET,
-      payload: { setId: setId, title: title },
-    });
+    // If this set is already active, toggle it off (i.e. clear the active set)
+    if (userClient.activeSet.setId === setId) {
+      userClientDispatch({
+        type: ACTION_TYPE.CLEAR_ACTIVE_SET,
+      });
+    } else {
+      userClientDispatch({
+        type: ACTION_TYPE.UPDATE_ACTIVE_SET,
+        payload: { setId: setId, title: title },
+      });
+    }
   };
 
   if (!isLoading) {
@@ -114,7 +128,7 @@ const SetsView = ({ user }) => {
           <SetsList
             sets={sets}
             onRemoveSet={onRemoveSet}
-            onMakeSetActive={onMakeSetActive}
+            onToggleActiveSet={onToggleActiveSet}
           />
         }
       </>
@@ -132,7 +146,7 @@ const SetsView = ({ user }) => {
 const SetsList = ({
   sets,
   onRemoveSet = (e, f) => f,
-  onMakeSetActive = (f) => f,
+  onToggleActiveSet = (f) => f,
 }) => {
   const activeId = "3TThsmMvOvl6tPtjy4od";
 
@@ -154,7 +168,7 @@ const SetsList = ({
           <ListItemSecondaryAction>
             <IconButton
               onClick={(e) =>
-                onMakeSetActive(e, setItem.setId, setItem.data.title)
+                onToggleActiveSet(e, setItem.setId, setItem.data.title)
               }
             >
               <DoneOutlineIcon />
@@ -172,34 +186,7 @@ const SetsList = ({
 SetsList.propTypes = {
   sets: PropTypes.array,
   onRemoveSet: PropTypes.func,
-  onMakeSetActive: PropTypes.func,
+  onToggleActiveSet: PropTypes.func,
 };
 
 export default SetsView;
-
-/* const getSets = async () => {
-  console.log("SetsView.js: gettings sets from set_ids");
-  const snapshot = await getSetsByIds(setIds);
-  let setsArray = [];
-  snapshot.forEach((doc) => {
-    setsArray.push({ ...doc.data(), id: doc.id });
-  });
-  setSets(setsArray);
-  setIsLoading(false);
-};
-
-if (setIds == null || !setIds.length) {
-  console.log(
-    "SetsPage.js: nothing in set_id array for this user in the database"
-  );
-  setIsLoading(false);
-  return;
-} else {
-  try {
-    setIsLoading(true);
-    getSets();
-  } catch (e) {
-    console.log("SetsPage.js: error in getSets = ", e.message);
-    setIsLoading(false);
-  }
-} */
