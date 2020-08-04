@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
+
 import { getNoteById } from "../Firebase";
 import ViewNoteToolbar from "./Toolbar";
 
@@ -55,14 +56,14 @@ const NoteView = (props) => {
     document.addEventListener("mouseup", onMouseUp);
     // remove the listener
     return () => document.removeEventListener("mouseup", onMouseUp);
-  }, [onMouseUp]);
+  }, []);
 
   /* Get note from Firestore db
   - Passing both the firebase and noteId in the useEffect dependency array
   If these values change, the useEffect hook will be called again */
   useEffect(() => {
-    const getNote = async (noteId) => {
-      await getNoteById(noteId).then((snapshot) => {
+    const getNote = (noteId) => {
+      getNoteById(noteId).then((snapshot) => {
         if (snapshot.exists) {
           setNote(snapshot.data());
         }
@@ -77,12 +78,14 @@ const NoteView = (props) => {
       {note != null ? (
         <>
           <ViewNoteToolbar currentTextSelected={currentTextSelected} />
-          <Container id="noteView">
+          <Container>
             <FormControlLabel control={<Checkbox />} label="Scrollable note" />
 
-            <Typography variant="h3">{note.title}</Typography>
-            <br></br>
-            <div dangerouslySetInnerHTML={{ __html: note.content }} />
+            <div id="noteView">
+              <Typography variant="h3">{note.title}</Typography>
+              <br></br>
+              <div dangerouslySetInnerHTML={{ __html: note.content }} />
+            </div>
           </Container>
         </>
       ) : null}

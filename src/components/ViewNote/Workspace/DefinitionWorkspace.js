@@ -153,7 +153,7 @@ class DefinitionWorkspace extends Component {
         </ClickAwayListener>
         <Grid item container lg={1} sm={12} justify="center" spacing={2}>
           <Grid item>
-            <SaveButton isEnabled={this.state.isReadyToSave} />
+            <SaveButton isEnabled={this.state.isReadyToSave} type="submit" />
           </Grid>
           <Grid item>
             <FlipButton isEnabled={true} onClick={this.onFlip.bind(this)} />

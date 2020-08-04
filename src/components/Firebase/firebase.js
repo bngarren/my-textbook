@@ -190,13 +190,48 @@ export const addNote = async (userId, setId = null, data) => {
       res_updatedSet = await t.set(
         setRef,
         {
-          notes: { [setRef.id]: newNoteInSet },
+          notes: { [newNoteRef.id]: newNoteInSet },
         },
         { merge: true }
       );
     });
   } catch (error) {
     throw new Error("Transaction failed for addNote: ", error.message);
+  }
+  return true;
+};
+
+export const removeNote = async (noteId, setId = null) => {
+  if (noteId == null) {
+    throw new Error("Missing noteId, cannot remove Note");
+  }
+
+  try {
+    await db.runTransaction(async (t) => {
+      const noteRef = db.collection(ROOT_COLLECTION.NOTES).doc(noteId);
+
+      let setRef;
+      if (setId != null) {
+        setRef = db.collection(ROOT_COLLECTION.SETS).doc(setId);
+      } else {
+        /* Need to look up setId by more computational lookup, i.e. searching for this 
+        setId by looking through each set to see if it contains this noteId within it's notes map */
+      }
+
+      if (setRef == null) {
+        // for now, just throw an error
+        throw new Error("Missing setId, cannot remove Note");
+      }
+
+      await t.delete(noteRef);
+
+      // we use this special dot notation to access a particular nested field
+      await t.update(setRef, {
+        [`notes.${noteId}`]: firebase.firestore.FieldValue.delete(),
+      });
+    });
+  } catch (error) {
+    throw new Error("Transaction failed for removeNote: ", error.message);
   }
   return true;
 };

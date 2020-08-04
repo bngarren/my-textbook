@@ -15,6 +15,7 @@ import {
   addSet,
   removeSet,
   addNote,
+  removeNote,
 } from "./firebase";
 
 export { FirebaseContext, useFirebase };
@@ -34,4 +35,5 @@ export {
   addSet,
   removeSet,
   addNote,
+  removeNote,
 };

@@ -1,20 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
+import { makeStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
+import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
+import { ListItemSecondaryAction, IconButton } from "@material-ui/core";
 
 import { NOTE_PAGE } from "../../../constants/routes";
-import { getSetById } from "../../Firebase";
+import { getSetById, removeNote } from "../../Firebase";
 import AddNoteForm from "../AddNote";
+
+const useStyles = makeStyles({
+  notesListRoot: {
+    width: "400px",
+  },
+});
 
 const NotesView = ({ setId, user }) => {
   const [set, setSet] = useState(null);
   const [notes, setNotes] = useState(null);
   const [isLoading, setIsLoading] = useState(notes ? false : true);
   const [refresh, setRefresh] = useState(false); // to trigger re-render for NotesView
+
+  const classes = useStyles();
 
   useEffect(() => {
     if (setId == null) {
@@ -76,6 +87,22 @@ const NotesView = ({ setId, user }) => {
     }
   };
 
+  const onRemoveNote = (e, noteId) => {
+    if (noteId == null || setId == null) {
+      console.error(
+        "NotesView.js: Cannot remove note, either invalid noteId or setId"
+      );
+    }
+
+    try {
+      removeNote(noteId, setId).then((res) => {
+        res && setRefresh(!refresh);
+      });
+    } catch (error) {
+      console.error("NotesView.js Cannot remove note: ", error.message);
+    }
+  };
+
   if (!isLoading) {
     return (
       <>
@@ -85,12 +112,17 @@ const NotesView = ({ setId, user }) => {
           onNewNoteAdded={onNewNoteAdded}
         />
         {notes !== null && (
-          <List>
+          <List className={classes.notesListRoot}>
             {notes.map((note) => (
               <ListItem key={note.noteId}>
                 <Link to={`${NOTE_PAGE}/${note.noteId}`}>
                   <ListItemText primary={note.data.title} />
                 </Link>
+                <ListItemSecondaryAction>
+                  <IconButton onClick={(e) => onRemoveNote(e, note.noteId)}>
+                    <DeleteForeverIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
               </ListItem>
             ))}
           </List>
