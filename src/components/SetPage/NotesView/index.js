@@ -10,9 +10,8 @@ import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import { ListItemSecondaryAction, IconButton } from "@material-ui/core";
 
 import { NOTE_PAGE } from "../../../constants/routes";
-import { getSetById, removeNote } from "../../Firebase";
+import { getDocFromSetNotes, removeNote } from "../../Firebase";
 import AddNoteForm from "../AddNote";
-import { getDocFromSetNotes } from "../../Firebase/firebase";
 
 const useStyles = makeStyles({
   notesListRoot: {

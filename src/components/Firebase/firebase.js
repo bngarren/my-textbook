@@ -85,6 +85,15 @@ export const getDocFromSetNotes = (setId) => {
 };
 
 /**
+ * Retrieves a document from the 'set-cards' collection
+ * @param  {String} setId The setId used as the document key
+ * @return {Promise}      A Promise resolved with a DocumentSnapshot containing the current document contents.
+ */
+export const getDocFromSetCards = (setId) => {
+  return db.collection(ROOT_COLLECTION.SET_CARDS).doc(setId).get();
+};
+
+/**
  * Updates and/or creates if necessary, documents in the following collections: 'user-sets', 'set-notes', and 'set-cards', to represent a new set with unique setId for this user
  * @param  {String} userId The userId used as the document key for the 'user-sets' collection
  * @param  {Object} data Object holding the set data, needs at least a 'title' key and value
@@ -334,6 +343,29 @@ export const removeNote = async (noteId, setId) => {
     throw new Error("Transaction failed for removeNote: ", error.message);
   }
   return true;
+};
+
+/**
+ * Removes card with given cardId from the set's document in the 'set-cards' collection
+ * @param  {String} cardId The cardId that references this card in document
+ * @param  {String} setId The setId of the set which this card belongs
+ * @return {Boolean}      A boolean representing the result of the atomic transaction (all completed or all failed)
+ */
+export const removeCard = async (cardId, setId) => {
+  if (cardId == null) {
+    throw new Error("Missing cardId, cannot remove Card");
+  } else if (setId == null) {
+    throw new Error("Missing setId, cannot remove Card");
+  }
+
+  const ref_setCardsDoc = db.collection(ROOT_COLLECTION.SET_CARDS).doc(setId);
+
+  const res = await ref_setCardsDoc.update({
+    [`cards.${cardId}`]: firebase.firestore.FieldValue.delete(),
+  });
+
+  console.log(res);
+  return res
 };
 
 /* - - - HELPERS - - - */

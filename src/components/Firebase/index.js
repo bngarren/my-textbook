@@ -11,10 +11,13 @@ import {
   onSnapshotUserById,
   getNoteById,
   getDocFromUserSets,
+  getDocFromSetNotes,
+  getDocFromSetCards,
   addSet,
   removeSet,
   addNote,
   removeNote,
+  removeCard,
 } from "./firebase";
 
 export { FirebaseContext, useFirebase };
@@ -30,8 +33,11 @@ export {
   onSnapshotUserById,
   getNoteById,
   getDocFromUserSets,
+  getDocFromSetNotes,
+  getDocFromSetCards,
   addSet,
   removeSet,
   addNote,
   removeNote,
+  removeCard,
 };
