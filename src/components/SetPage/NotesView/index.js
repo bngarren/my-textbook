@@ -12,6 +12,7 @@ import { ListItemSecondaryAction, IconButton } from "@material-ui/core";
 import { NOTE_PAGE } from "../../../constants/routes";
 import { getSetById, removeNote } from "../../Firebase";
 import AddNoteForm from "../AddNote";
+import { getDocFromSetNotes } from "../../Firebase/firebase";
 
 const useStyles = makeStyles({
   notesListRoot: {
@@ -20,7 +21,7 @@ const useStyles = makeStyles({
 });
 
 const NotesView = ({ setId, user }) => {
-  const [set, setSet] = useState(null);
+  const [setInfo, setSetInfo] = useState(null);
   const [notes, setNotes] = useState(null);
   const [isLoading, setIsLoading] = useState(notes ? false : true);
   const [refresh, setRefresh] = useState(false); // to trigger re-render for NotesView
@@ -28,56 +29,62 @@ const NotesView = ({ setId, user }) => {
   const classes = useStyles();
 
   useEffect(() => {
-    if (setId == null) {
+    if (setId == null || setId.trim() === "") {
       return;
     }
 
-    // Get set data from "sets" collection to population a list of notes
+    // Get doc from 'set-notes' collection that contains some notes' info
     setIsLoading(true);
-    getSetById(setId)
+
+    getDocFromSetNotes(setId)
       .then((snapshot) => {
         if (!snapshot.exists) {
-          throw new Error("NotesList.js: snapshot empty");
+          throw new Error(
+            `No document found in 'set-notes' for setId ${setId}`
+          );
         }
-        console.debug(
-          "NotesList.js: getSetById (database), snapshot.data() = ",
-          snapshot.data()
-        );
 
-        // store the data for the Set
-        const set = snapshot.data();
-        setSet(set);
+        setSetInfo({
+          title: snapshot.data().setTitle,
+          notes_count: snapshot.data().notes_count,
+          max_notes: snapshot.data().max_notes || 5, // default to max of 5 notes
+        });
 
-        // Try to extract the notes object from Set if  available
-        if ("notes" in set) {
-          // each note in the notes object is also a object/map
-          // need to convert to an array of maps for better iterating ability
-          const res = notesArrayFromObject(snapshot.data().notes);
+        if (!("notes" in snapshot.data())) {
+          throw new Error(
+            "Data model error, there is no 'notes' object in this document!"
+          );
+        }
 
-          res && setNotes(res);
+        // Try to extract the notes object from the document
+        // see if notes object contains any noteId's
+        let res = [];
+        if (Object.keys(snapshot.data().notes).length > 0) {
+          res = notesArrayFromObject(snapshot.data().notes);
+
+          if (res && res.length > 0) {
+            setNotes(res);
+          }
         } else {
-          console.debug("NotesList.js: This set has no notes map");
+          setNotes(null);
         }
-
         setIsLoading(false);
       })
       .catch((e) => {
         console.error(
-          "NotesList.js: Couldn't get notes set from set: ",
+          "NotesList.js: Failed to retrieve doc from 'set-notes': ",
           e.message
         );
+        setIsLoading(false);
       });
   }, [setId, refresh]);
 
-  const notesArrayFromObject = (setObject) => {
-    const entries = Object.entries(setObject);
-
+  const notesArrayFromObject = (notesObject) => {
+    const entries = Object.entries(notesObject);
     let res = [];
-
     for (const [key, value] of entries) {
       res.push({ noteId: key, data: value });
     }
-
     return res;
   };
 

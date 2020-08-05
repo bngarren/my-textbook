@@ -14,9 +14,10 @@ const firebaseConfig = {
 
 export const ROOT_COLLECTION = {
   USERS: "users",
-  SETS: "sets",
   NOTES: "notes",
   USER_SETS: "user-sets",
+  SET_NOTES: "set-notes",
+  SET_CARDS: "set-cards",
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -65,59 +66,90 @@ export const getNoteById = async (noteId) => {
   }
 };
 
-export const getSetById = async (setId) => {
-  try {
-    return await db.collection(ROOT_COLLECTION.SETS).doc(setId).get();
-  } catch (error) {
-    throw new Error(`Failed getSetById: ${error.message}`);
-  }
+/**
+ * Retrieves a document from the 'user-sets' collection
+ * @param  {String} userId The userId used as the document key
+ * @return {Promise}      A Promise resolved with a DocumentSnapshot containing the current document contents.
+ */
+export const getDocFromUserSets = (userId) => {
+  return db.collection(ROOT_COLLECTION.USER_SETS).doc(userId).get();
 };
 
-export const getUserSets = async (userSetsId) => {
-  return await db.collection(ROOT_COLLECTION.USER_SETS).doc(userSetsId).get();
+/**
+ * Retrieves a document from the 'set-notes' collection
+ * @param  {String} setId The setId used as the document key
+ * @return {Promise}      A Promise resolved with a DocumentSnapshot containing the current document contents.
+ */
+export const getDocFromSetNotes = (setId) => {
+  return db.collection(ROOT_COLLECTION.SET_NOTES).doc(setId).get();
 };
 
-export const addSet = async (userId, userSetsId = null, data) => {
+/**
+ * Updates and/or creates if necessary, documents in the following collections: 'user-sets', 'set-notes', and 'set-cards', to represent a new set with unique setId for this user
+ * @param  {String} userId The userId used as the document key for the 'user-sets' collection
+ * @param  {Object} data Object holding the set data, needs at least a 'title' key and value
+ * @return {Boolean}      A boolean representing the result of the atomic transaction (all completed or all failed)
+ */
+export const addSet = async (userId, data) => {
   const { title } = data;
+
   if (!userId) {
     throw new Error("No userId!");
   }
   if (data == null || title.trim() === "") {
-    throw new Error("Insufficient data to create new Set");
+    throw new Error("Insufficient data to add new set to database");
   }
 
   // ensure atomicity
   try {
     await db.runTransaction(async (t) => {
-      // locate the user's userSets doc or, if null, a new userSet doc will be generated below
-      const userSetsRef =
-        userSetsId !== null
-          ? db.collection(ROOT_COLLECTION.USER_SETS).doc(userSetsId)
-          : null;
+      // locate the user's 'user-sets' doc or, if null, a new doc will be generated
+      const ref_userSetsDoc = db
+        .collection(ROOT_COLLECTION.USER_SETS)
+        .doc(userId);
 
-      // create the doc for this new set in the "sets" collection
-      const newSetRef = db.collection(ROOT_COLLECTION.SETS).doc();
+      // create a new setId
+      const setId = firestoreAutoId();
 
-      // populate the fields of the new set in the "sets" collection
-      const res_set = await t.set(newSetRef, {
-        title: title,
-        userId: userId,
-      });
-
-      const newSetInUserSets = {
-        setId: newSetRef.id,
-        title: title,
-      };
-
-      let res_userSet;
-      // update the user's specific "userSets" document with the new set information
-      res_userSet = await t.set(
-        userSetsRef,
+      // UPDATE USER-SETS
+      await t.set(
+        ref_userSetsDoc,
         {
-          sets: { [newSetRef.id]: { title: title } },
+          set_created_on: firebase.firestore.FieldValue.serverTimestamp(),
+          sets_count: firebase.firestore.FieldValue.increment(1),
+          sets: {
+            [setId]: { title: title },
+          },
         },
         { merge: true }
       );
+
+      // ADD NEW DOC TO SET-NOTES
+      const ref_setNotesDoc = db
+        .collection(ROOT_COLLECTION.SET_NOTES)
+        .doc(setId);
+
+      await t.set(ref_setNotesDoc, {
+        setTitle: title,
+        userId: userId,
+        notes_count: 0,
+        max_notes: 5,
+        notes: {},
+      });
+
+      // ADD NEW DOC to SET-CARDS
+
+      const ref_setCardsDoc = db
+        .collection(ROOT_COLLECTION.SET_CARDS)
+        .doc(setId);
+
+      await t.set(ref_setCardsDoc, {
+        setTitle: title,
+        userId: userId,
+        cards_count: 0,
+        last_modified: firebase.firestore.Timestamp.fromDate(new Date()),
+        cards: {},
+      });
     });
   } catch (error) {
     throw new Error("Transaction failed for addSet: ", error.message);
@@ -125,30 +157,98 @@ export const addSet = async (userId, userSetsId = null, data) => {
   return true;
 };
 
-export const removeSet = async (userSetsId, setId) => {
-  if (!userSetsId || !setId) {
-    throw new Error("Missing userSetsId or setId, can't remove set");
+/**
+ * Removes set related documents or fields of documents in the following collections: 'user-sets', 'set-notes', and 'set-cards', as well as
+ * all documents in the Notes collection that reference the given setId
+ * @param  {String} userId The userId used as the document key for the 'user-sets' collection
+ * @param  {String} setId The setId used throughout the collections that reference this set
+ * @return {Boolean}      A boolean representing the result of the atomic transaction (all completed or all failed)
+ */
+export const removeSet = async (userId, setId) => {
+  if (
+    userId == null ||
+    setId == null ||
+    userId.trim() === "" ||
+    setId.trim() === ""
+  ) {
+    throw new Error("Missing userId and/or setId, can't remove set");
   }
 
+  // ensure atomicity
   try {
     await db.runTransaction(async (t) => {
-      const setRef = db.collection(ROOT_COLLECTION.SETS).doc(setId);
-      const userSetsRef = db
+      // remove the doc in 'set-cards'
+      const ref_setCardsDoc = db
+        .collection(ROOT_COLLECTION.SET_CARDS)
+        .doc(setId);
+      await t.delete(ref_setCardsDoc);
+
+      /* Remove all documents in 'notes' collection with this setId field.
+      Since we are billed for all the documents matched by a query, let's just
+      query the 'set-notes' document x1, get the noteId's from that, and then
+      perform the delete operation on the 'notes' collection with this array of noteId's
+      */
+      const snap = await db
+        .collection(ROOT_COLLECTION.SET_NOTES)
+        .doc(setId)
+        .get();
+      if (!snap.exists) {
+        throw new Error("Could not located the 'set-notes' document");
+      }
+
+      const notesObj = snap.data().notes || null;
+      if (notesObj == null) {
+        throw new Error("Missing 'notes' object in the 'set-notes' document");
+      }
+
+      // get array of noteIds
+      const noteIds = Object.keys(notesObj);
+
+      if (noteIds.length !== snap.data().notes_count) {
+        console.error(
+          "firebase.js: removeSet() WARNING: the number of noteId's in the notes object does not match the notes_count field"
+        );
+      }
+
+      if (noteIds.length > 0) {
+        noteIds.forEach(async (id) => {
+          const ref_note = db.collection(ROOT_COLLECTION.NOTES).doc(id);
+          await t.delete(ref_note);
+        });
+        console.debug(
+          `firebase.js removeSet() will remove ${noteIds.length} doc(s) from 'notes' collection`
+        );
+      }
+
+      // Remove doc in 'set-notes' now that we are done using it
+      const ref_setNotesDoc = db
+        .collection(ROOT_COLLECTION.SET_NOTES)
+        .doc(setId);
+      await t.delete(ref_setNotesDoc);
+
+      // locate associated 'user-sets' document and remove this key-value pair in the sets object
+      const ref_userSetsDoc = db
         .collection(ROOT_COLLECTION.USER_SETS)
-        .doc(userSetsId);
+        .doc(userId);
 
-      await t.delete(setRef);
-
-      await t.update(userSetsRef, {
+      await t.update(ref_userSetsDoc, {
+        sets_count: firebase.firestore.FieldValue.increment(-1),
         [`sets.${setId}`]: firebase.firestore.FieldValue.delete(),
       });
     });
   } catch (error) {
-    throw new Error("Transaction failed for removeSet: ", error.message);
+    throw new Error(`Transaction failed for removeSet: ${error.message}`);
   }
   return true;
 };
 
+/**
+ * Updates and/or creates if necessary, documents in the following collections: 'set-notes' and 'notes', to represent a new note for this set
+ * @param  {String} userId The userId to associate (as owner) with this note
+ * @param  {String} setId The setId that this note belongs to
+ * @param  {Object} data Object holding the note data, needs at least a 'title' key and value
+ * @return {Boolean}      A boolean representing the result of the atomic transaction (all completed or all failed)
+ */
 export const addNote = async (userId, setId = null, data) => {
   const { title } = data;
 
@@ -156,41 +256,37 @@ export const addNote = async (userId, setId = null, data) => {
     throw new Error("No userId!");
   } else if (setId == null) {
     throw new Error("No setId!");
-  }
-  if (data == null || title.trim() === "") {
+  } else if (data == null || title.trim() === "") {
     throw new Error("Insufficient data to create new Note");
   }
 
   // ensure atomicity
-  /* 1. Need to add new note to Notes collection 
-     2. Need to add mapping to the Sets document pertaning to this set under the notes map 
-     */
   try {
     await db.runTransaction(async (t) => {
-      // create the doc for this new note in the "notes" collection
-      const newNoteRef = db.collection(ROOT_COLLECTION.NOTES).doc();
+      // Add a new doc to the 'notes' collection, generating a unique noteId
+      const ref_newNote = db.collection(ROOT_COLLECTION.NOTES).doc();
 
-      // populate the fields of the new note in the "notes" collection
-      const res_note = await t.set(newNoteRef, {
-        title: title,
-        userId: userId,
+      await t.set(ref_newNote, {
         setId: setId,
+        userId: userId,
+        title: title,
+        content: "",
+        created_on: firebase.firestore.FieldValue.serverTimestamp(),
+        last_modified: firebase.firestore.FieldValue.serverTimestamp(),
       });
 
-      // get the set ref
-      const setRef = db.collection(ROOT_COLLECTION.SETS).doc(setId);
+      // Update this setId's doc in the 'set-notes' collection
+      const ref_setNotesDoc = db
+        .collection(ROOT_COLLECTION.SET_NOTES)
+        .doc(setId);
 
-      // make the new data object for the note
-      const newNoteInSet = {
-        title: title,
-      };
-
-      // now update this set's document with the new note
-      let res_updatedSet;
-      res_updatedSet = await t.set(
-        setRef,
+      await t.set(
+        ref_setNotesDoc,
         {
-          notes: { [newNoteRef.id]: newNoteInSet },
+          notes: {
+            [ref_newNote.id]: { title: title },
+          },
+          notes_count: firebase.firestore.FieldValue.increment(1),
         },
         { merge: true }
       );
@@ -201,32 +297,36 @@ export const addNote = async (userId, setId = null, data) => {
   return true;
 };
 
-export const removeNote = async (noteId, setId = null) => {
+/**
+ * Removes note related documents or fields of documents in the following collections: 'set-notes' and 'notes'
+ * @param  {String} noteId The noteId which is the primary key in 'notes' and referenced in 'set-notes'
+ * @param  {String} setId The setId of the set which this note belongs
+ * @return {Boolean}      A boolean representing the result of the atomic transaction (all completed or all failed)
+ */
+export const removeNote = async (noteId, setId) => {
   if (noteId == null) {
     throw new Error("Missing noteId, cannot remove Note");
+  } else if (setId == null) {
+    throw new Error("Missing setId, cannot remove Note");
   }
 
+  //ensure atomicity
   try {
     await db.runTransaction(async (t) => {
-      const noteRef = db.collection(ROOT_COLLECTION.NOTES).doc(noteId);
+      // Remove the document from 'notes' collection
+      const ref_note = db.collection(ROOT_COLLECTION.NOTES).doc(noteId);
 
-      let setRef;
-      if (setId != null) {
-        setRef = db.collection(ROOT_COLLECTION.SETS).doc(setId);
-      } else {
-        /* Need to look up setId by more computational lookup, i.e. searching for this 
-        setId by looking through each set to see if it contains this noteId within it's notes map */
-      }
+      await t.delete(ref_note);
 
-      if (setRef == null) {
-        // for now, just throw an error
-        throw new Error("Missing setId, cannot remove Note");
-      }
-
-      await t.delete(noteRef);
+      // Remove the key-value entry in 'set-notes' which is embedded in the notes object
+      // Also, update the notes_count field by -1
+      const ref_setNotesDoc = db
+        .collection(ROOT_COLLECTION.SET_NOTES)
+        .doc(setId);
 
       // we use this special dot notation to access a particular nested field
-      await t.update(setRef, {
+      await t.update(ref_setNotesDoc, {
+        notes_count: firebase.firestore.FieldValue.increment(-1),
         [`notes.${noteId}`]: firebase.firestore.FieldValue.delete(),
       });
     });
@@ -234,4 +334,18 @@ export const removeNote = async (noteId, setId = null) => {
     throw new Error("Transaction failed for removeNote: ", error.message);
   }
   return true;
+};
+
+/* - - - HELPERS - - - */
+
+export const firestoreAutoId = () => {
+  const CHARS =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  let autoId = "";
+
+  for (let i = 0; i < 20; i++) {
+    autoId += CHARS.charAt(Math.floor(Math.random() * CHARS.length));
+  }
+  return autoId;
 };

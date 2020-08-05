@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import PropTypes from "prop-types";
-import { getUserSets, removeSet } from "../../Firebase";
+import { getDocFromUserSets, removeSet } from "../../Firebase";
 import Loading from "../../Loading";
 
 import List from "@material-ui/core/List";
@@ -18,26 +18,30 @@ import { useUserClient, ACTION_TYPE } from "../../../hooks/useUserClient";
 import AddSetForm from "../AddSet";
 
 const SetsView = ({ user }) => {
-  const userSetsId = useRef(user.userSetsId || null);
-  const userSet = useRef(null);
+  const userSetsDoc = useRef(null);
   const [sets, setSets] = useState(null);
   const [refresh, setRefresh] = useState(false); // used to trigger re-render for SetsView
   const [isLoading, setIsLoading] = useState(sets ? false : true);
   const [userClient, userClientDispatch] = useUserClient();
 
-  /* Update userSets state if the user prop changes */
+  /* Update userSet state if the user prop changes */
   useEffect(() => {
-    if (user != null && userSetsId != null) {
+    if (user != null) {
       // Grab new group of sets from db collection (user-sets)
       setIsLoading(true);
-      getUserSets(userSetsId.current)
+      getDocFromUserSets(user.uid)
         .then((snapshot) => {
           if (!snapshot.exists) {
-            throw new Error("SetsView.js: snapshot empty");
+            console.debug(
+              "SetsView.js: getDocFromUserSets() did not return a document (i.e. this user has no sets, or this is an error!)"
+            );
+            setIsLoading(false);
+            return;
           }
-          userSet.current = snapshot.data();
+
+          userSetsDoc.current = snapshot.data();
           console.debug(
-            "SetsView.js: getUserSets (database), snapshot.data() = ",
+            "SetsView.js: getDocFromUserSets (database), snapshot.data() = ",
             snapshot.data()
           );
 
@@ -45,7 +49,7 @@ const SetsView = ({ user }) => {
 
           console.debug("SetsView.js: res = ", res);
 
-          if (shouldUpdate(userSet.current)) {
+          if (shouldUpdate(userSetsDoc.current)) {
             setSets(res);
             setIsLoading(false);
           }
@@ -71,13 +75,13 @@ const SetsView = ({ user }) => {
     return res;
   };
 
-  const shouldUpdate = (userSet) => {
+  const shouldUpdate = (userSetsDoc) => {
     // Could check here to see if the new group of sets is different than the old group of sets
     return true;
   };
 
-  const onNewSetAdded = (updatedUserSet) => {
-    if (updatedUserSet) {
+  const onNewSetAdded = (updatedUserSetsDoc) => {
+    if (updatedUserSetsDoc) {
       setRefresh(!refresh);
     }
   };
@@ -86,11 +90,11 @@ const SetsView = ({ user }) => {
   const onRemoveSet = (event, setId) => {
     event.preventDefault();
 
-    if (userSetsId.current && setId) {
-      removeSet(userSetsId.current, setId)
+    if (setId != null) {
+      removeSet(user.uid, setId)
         .then(() => {
+          // send refresh signal to re-render
           setRefresh(!refresh);
-
           // now we need to change the active set if this set we deleted was active
           if (userClient.activeSet.setId === setId) {
             userClientDispatch({
@@ -99,7 +103,7 @@ const SetsView = ({ user }) => {
           }
         })
         .catch((error) => {
-          console.error(error);
+          console.error("SetsView.js: Couldn't remove set: ", error.message);
         });
     }
   };
@@ -127,20 +131,23 @@ const SetsView = ({ user }) => {
     return (
       <>
         <AddSetForm user={user} onNewSetAdded={onNewSetAdded} />
-        {
+
+        {sets != null && sets.length > 0 ? (
           <SetsList
             sets={sets}
             onRemoveSet={onRemoveSet}
             onToggleActiveSet={onToggleActiveSet}
           />
-        }
+        ) : (
+          "Add your first set!"
+        )}
       </>
     );
   } else {
     return (
       <>
         <Loading />
-        {sets && <SetsList sets={sets} />}
+        {sets != null && sets.length > 1 ? <SetsList sets={sets} /> : null}
       </>
     );
   }

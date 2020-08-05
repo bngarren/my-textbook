@@ -20,20 +20,20 @@ const AddSetForm = ({ user, onNewSetAdded = (f) => f }) => {
     if (user) {
       const title = value;
       const userId = user.uid;
-      const userSetsId = user.userSetsId || null;
 
-      handleAddSet(userId, userSetsId, { title: title });
+      handleAddSet(userId, { title: title });
     }
   };
 
-  const handleAddSet = (userId, userSetsId, data) => {
-    try {
-      addSet(userId, userSetsId, data).then((res) => {
+  const handleAddSet = (userId, data) => {
+    addSet(userId, data)
+      .then((res) => {
         onNewSetAdded(res); //res is true/false if transaction completed
+      })
+      .catch((e) => {
+        console.error("AddSet.js: Error adding new set: ", e.message);
       });
-    } catch (error) {
-      console.error("AddSet.js: Error adding new set: ", error.message);
-    }
+
     setValue("");
   };
 
