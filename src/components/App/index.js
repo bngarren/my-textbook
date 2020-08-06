@@ -79,6 +79,7 @@ const App = () => {
                 <Route path={ROUTES.SETS_PAGE} component={SetsPage} />
                 <Route path={setPath} component={SetPage} />
                 <Route path={notePath} component={ViewNotePage} />
+                <Route path={ROUTES.NOTE_PAGE} component={ViewNotePage} />
                 <Route path={ROUTES.SIGNIN_PAGE} component={SignInPage} />
                 <Route path={ROUTES.SIGNOUT_PAGE} component={SignOutPage} />
               </Switch>

@@ -23,6 +23,7 @@ export default function SaveButton(props) {
       className={classes.root}
       startIcon={<SaveIcon />}
       disabled={!props.isEnabled}
+      onClick={props.onClick}
     >
       Save
     </Button>

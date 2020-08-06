@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { getDocFromUserSets, removeSet } from "../../Firebase";
 import Loading from "../../Loading";
@@ -7,12 +8,10 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
-import SubjectIcon from "@material-ui/icons/Subject";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
-import DoneOutlineIcon from "@material-ui/icons/DoneOutline";
-import PlaylistAddCheckIcon from "@material-ui/icons/PlaylistAddCheck";
 import { ListItemSecondaryAction, IconButton } from "@material-ui/core";
 
+import { SET_PAGE } from "../../../constants/routes";
 import { useUserClient, ACTION_TYPE } from "../../../hooks/useUserClient";
 
 import AddSetForm from "../AddSet";
@@ -109,7 +108,7 @@ const SetsView = ({ user }) => {
   };
 
   // TOGGLE ACTIVE SET
-  const onToggleActiveSet = (event, setId, title = "!Error!") => {
+  /*  const makeActiveSet = (event, setId, title = "!Error!") => {
     event.preventDefault();
 
     if (!setId) return;
@@ -125,7 +124,7 @@ const SetsView = ({ user }) => {
         payload: { setId: setId, title: title },
       });
     }
-  };
+  }; */
 
   if (!isLoading) {
     return (
@@ -133,11 +132,7 @@ const SetsView = ({ user }) => {
         <AddSetForm user={user} onNewSetAdded={onNewSetAdded} />
 
         {sets != null && sets.length > 0 ? (
-          <SetsList
-            sets={sets}
-            onRemoveSet={onRemoveSet}
-            onToggleActiveSet={onToggleActiveSet}
-          />
+          <SetsList sets={sets} onRemoveSet={onRemoveSet} />
         ) : (
           "Add your first set!"
         )}
@@ -153,36 +148,18 @@ const SetsView = ({ user }) => {
   }
 };
 
-const SetsList = ({
-  sets,
-  onRemoveSet = (e, f) => f,
-  onToggleActiveSet = (f) => f,
-}) => {
-  const activeId = "3TThsmMvOvl6tPtjy4od";
-
+const SetsList = ({ sets, onRemoveSet = (e, f) => f }) => {
   return (
     <List>
       {sets.map((setItem) => (
-        <ListItem key={setItem.setId} divider={true}>
-          <ListItemIcon>
-            {setItem.setId === activeId ? (
-              <PlaylistAddCheckIcon color="primary" />
-            ) : (
-              <SubjectIcon />
-            )}
-          </ListItemIcon>
-          <ListItemText
-            primary={setItem.data.title}
-            secondary={setItem.setId === activeId && "active"}
-          ></ListItemText>
+        <ListItem
+          key={setItem.setId}
+          divider={true}
+          component={Link}
+          to={`${SET_PAGE}/${setItem.setId}`}
+        >
+          <ListItemText primary={setItem.data.title}></ListItemText>
           <ListItemSecondaryAction>
-            <IconButton
-              onClick={(e) =>
-                onToggleActiveSet(e, setItem.setId, setItem.data.title)
-              }
-            >
-              <DoneOutlineIcon />
-            </IconButton>
             <IconButton onClick={(e) => onRemoveSet(e, setItem.setId)}>
               <DeleteForeverIcon />
             </IconButton>

@@ -10,6 +10,7 @@ import {
   userByUid,
   onSnapshotUserById,
   getNoteById,
+  getSetForNoteId,
   getDocFromUserSets,
   getDocFromSetNotes,
   getDocFromSetCards,
@@ -17,6 +18,7 @@ import {
   removeSet,
   addNote,
   removeNote,
+  addCard,
   removeCard,
 } from "./firebase";
 
@@ -32,6 +34,7 @@ export {
   userByUid,
   onSnapshotUserById,
   getNoteById,
+  getSetForNoteId,
   getDocFromUserSets,
   getDocFromSetNotes,
   getDocFromSetCards,
@@ -39,5 +42,6 @@ export {
   removeSet,
   addNote,
   removeNote,
+  addCard,
   removeCard,
 };

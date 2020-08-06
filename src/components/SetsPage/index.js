@@ -11,9 +11,17 @@ import EnumState from "../EnumState";
 
 import SetsView from "./SetsView";
 
+import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 
+const useStyles = makeStyles({
+  root: {
+    paddingTop: "30px",
+  },
+});
+
 const SetsPage = () => {
+  const classes = useStyles();
   const { userDb: user } = useUserDb(); // get our user info
   const userSessionStatus = useUserSessionStatus();
 
@@ -32,7 +40,7 @@ const SetsPage = () => {
   };
 
   return (
-    <div>
+    <div className={classes.root}>
       <EnumState
         currentStatus={userSessionStatus}
         forStatus={USER_SESSION_STATUS.ANON}

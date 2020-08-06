@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 
-import { getNoteById } from "../Firebase";
+import * as ROUTES from "../../constants/routes";
+import { getNoteById, getSetForNoteId } from "../Firebase";
+import { useUserClient, ACTION_TYPE } from "../../hooks/useUserClient";
+import { setCardsContext } from "../../hooks/useSetCards";
 import ViewNoteToolbar from "./Toolbar";
 
 import Container from "@material-ui/core/Container";
@@ -17,6 +20,78 @@ const NoteView = (props) => {
   const { id: noteId } = useParams();
   const [note, setNote] = useState();
   const [currentTextSelected, setCurrentTextSelected] = useState(null);
+  const [isLoading, setIsLoading] = useState(note ? false : true);
+  const history = useHistory();
+  const [userClient, userClientDispatch] = useUserClient();
+
+  /* Get note from Firestore db
+  - Passing the noteId in the useEffect dependency array
+  If these values change, the useEffect hook will be called again */
+  useEffect(() => {
+    if (noteId == null || noteId.trim() === "") {
+      console.log("here");
+      // Redirect to home page
+      history.push(ROUTES.HOME);
+      return;
+    }
+
+    setIsLoading(true);
+
+    getNoteById(noteId)
+      .then((snapshot) => {
+        if (!snapshot.exists) {
+          throw new Error(`No document found in 'notes' for noteId ${noteId}`);
+        }
+        setNote(snapshot.data());
+
+        // Now we need to reconcile what the "active set" for the app should be
+        // e.g. consider that the user arrived to this page via direct url and
+        // not through the SetPage
+        if (userClient.activeSet.setId !== snapshot.data().setId) {
+          console.debug("ViewNote.js: using getSetForNoteId to identify set");
+          // we must use the set-notes document to get the set info for this noteId
+          getSetForNoteId(snapshot.id)
+            .then((snapshot) => {
+              if (snapshot.empty) {
+                throw new Error(
+                  `couldn't find setId by querying 'set-notes' will noteId`
+                );
+              } else if (snapshot.size > 1) {
+                throw new Error(
+                  `located more than 1 document in 'set-notes' that claims this noteId`
+                );
+              }
+
+              const setData = snapshot.docs[0];
+              /* let the rest of the app know that the set that this note
+        belongs to should be "active", e.g. to show in Navigation bar or other places*/
+              userClientDispatch({
+                type: ACTION_TYPE.UPDATE_ACTIVE_SET,
+                payload: {
+                  setId: setData.id,
+                  title: setData.data().setTitle,
+                },
+              });
+            })
+            .catch((error) => {
+              console.error(
+                `ViewNote.js: Failed to update activeSet for userClientContext: ${error.message}`
+              );
+            });
+        }
+
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error(
+          "ViewNote.js: Failed to retrieve doc from 'notes': ",
+          error.message
+        );
+        setIsLoading(false);
+      });
+
+    console.log("ViewNote/index: useEffect getNote()");
+  }, [noteId]);
 
   /* callback for the onMouseUp event */
   /* used to see if there is a text selection within the noteView element */
@@ -56,39 +131,37 @@ const NoteView = (props) => {
     document.addEventListener("mouseup", onMouseUp);
     // remove the listener
     return () => document.removeEventListener("mouseup", onMouseUp);
-  }, []);
-
-  /* Get note from Firestore db
-  - Passing both the firebase and noteId in the useEffect dependency array
-  If these values change, the useEffect hook will be called again */
-  useEffect(() => {
-    const getNote = (noteId) => {
-      getNoteById(noteId).then((snapshot) => {
-        if (snapshot.exists) {
-          setNote(snapshot.data());
-        }
-      });
-    };
-    console.log("ViewNote/index: useEffect getNote()");
-    getNote(noteId);
-  }, [noteId]);
+  }, [onMouseUp]);
 
   return (
     <>
       {note != null ? (
         <>
-          <ViewNoteToolbar currentTextSelected={currentTextSelected} />
-          <Container>
-            <FormControlLabel control={<Checkbox />} label="Scrollable note" />
+          <setCardsContext.Provider
+            value={{ userId: note.userId, setId: note.setId }}
+          >
+            <ViewNoteToolbar
+              currentTextSelected={currentTextSelected}
+              noteOwner={note.userId}
+              setId={note.setId}
+            />
+            <Container>
+              <FormControlLabel
+                control={<Checkbox />}
+                label="Scrollable note"
+              />
 
-            <div id="noteView">
-              <Typography variant="h3">{note.title}</Typography>
-              <br></br>
-              <div dangerouslySetInnerHTML={{ __html: note.content }} />
-            </div>
-          </Container>
+              <div id="noteView">
+                <Typography variant="h3">{note.title}</Typography>
+                <br></br>
+                <div dangerouslySetInnerHTML={{ __html: note.content }} />
+              </div>
+            </Container>
+          </setCardsContext.Provider>
         </>
-      ) : null}
+      ) : (
+        <>Could not find this note.</>
+      )}
     </>
   );
 };

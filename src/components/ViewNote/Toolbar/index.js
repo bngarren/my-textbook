@@ -62,6 +62,8 @@ const ViewNoteToolbar = (props) => {
       <Workspace
         currentTextSelected={props.currentTextSelected}
         currentWorkspace={currentWorkspace}
+        noteOwner={props.noteOwner}
+        setId={props.setId}
       ></Workspace>
     </>
   );

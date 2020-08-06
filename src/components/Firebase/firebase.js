@@ -59,11 +59,14 @@ export const onSnapshotUserById = (id, callback) => {
 };
 
 export const getNoteById = async (noteId) => {
-  try {
-    return await db.collection(ROOT_COLLECTION.NOTES).doc(noteId).get();
-  } catch (error) {
-    throw new Error(`Failed getNoteById: ${error.message}`);
-  }
+  return await db.collection(ROOT_COLLECTION.NOTES).doc(noteId).get();
+};
+
+export const getSetForNoteId = async (noteId) => {
+  return await db
+    .collection(ROOT_COLLECTION.SET_NOTES)
+    .where(`notes.${noteId}.title`, ">", "")
+    .get();
 };
 
 /**
@@ -346,10 +349,50 @@ export const removeNote = async (noteId, setId) => {
 };
 
 /**
+ * Adds a card to the set by updating the set's document in the 'set-cards' collection
+ * @param  {String} userId The userId to associate (as owner) with this card and set
+ * @param  {String} setId The setId that this card belongs to
+ * @param  {Object} data Object holding the card data. Requires non-empty fields for 'side_one' and 'side_two'
+ * @return {Promise}      A Promise resolved once the data has been successfully written to the backend
+ */
+export const addCard = async (userId, setId, cardData) => {
+  const { side_one, side_two } = cardData;
+
+  if (userId == null) {
+    throw new Error("No userId!");
+  } else if (setId == null) {
+    throw new Error("No setId!");
+  } else if (
+    cardData == null ||
+    side_one.trim() === "" ||
+    side_two.trim() === ""
+  ) {
+    throw new Error("Insufficient data to create new Card");
+  }
+
+  // Generate a new cardId for this card
+  const cardId = firestoreAutoId();
+
+  // Update this setId's doc in the 'set-card' collection
+  const ref_setCardsDoc = db.collection(ROOT_COLLECTION.SET_CARDS).doc(setId);
+
+  return ref_setCardsDoc.update({
+    [`cards.${cardId}`]: {
+      side_one: side_one,
+      side_two: side_two,
+      created_on: firebase.firestore.FieldValue.serverTimestamp(),
+      last_modified: firebase.firestore.FieldValue.serverTimestamp(),
+    },
+    cards_count: firebase.firestore.FieldValue.increment(1),
+    last_modified: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+};
+
+/**
  * Removes card with given cardId from the set's document in the 'set-cards' collection
  * @param  {String} cardId The cardId that references this card in document
  * @param  {String} setId The setId of the set which this card belongs
- * @return {Boolean}      A boolean representing the result of the atomic transaction (all completed or all failed)
+ * @return
  */
 export const removeCard = async (cardId, setId) => {
   if (cardId == null) {
@@ -362,10 +405,10 @@ export const removeCard = async (cardId, setId) => {
 
   const res = await ref_setCardsDoc.update({
     [`cards.${cardId}`]: firebase.firestore.FieldValue.delete(),
+    cards_count: firebase.firestore.FieldValue.increment(-1),
   });
 
-  console.log(res);
-  return res
+  return res;
 };
 
 /* - - - HELPERS - - - */

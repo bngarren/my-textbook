@@ -11,6 +11,7 @@ import { ListItemSecondaryAction, IconButton } from "@material-ui/core";
 
 import { NOTE_PAGE } from "../../../constants/routes";
 import { getDocFromSetNotes, removeNote } from "../../Firebase";
+import { useUserClient, ACTION_TYPE } from "../../../hooks/useUserClient";
 import AddNoteForm from "../AddNote";
 
 const useStyles = makeStyles({
@@ -20,12 +21,12 @@ const useStyles = makeStyles({
 });
 
 const NotesView = ({ setId, user }) => {
+  const classes = useStyles();
   const [setInfo, setSetInfo] = useState(null);
   const [notes, setNotes] = useState(null);
   const [isLoading, setIsLoading] = useState(notes ? false : true);
   const [refresh, setRefresh] = useState(false); // to trigger re-render for NotesView
-
-  const classes = useStyles();
+  const [userClient, userClientDispatch] = useUserClient(); // use context here to track which set is "active"
 
   useEffect(() => {
     if (setId == null || setId.trim() === "") {
@@ -67,6 +68,16 @@ const NotesView = ({ setId, user }) => {
         } else {
           setNotes(null);
         }
+
+        /* let the rest of the app know that the set that this note
+        belongs to should be "active", e.g. to show in Navigation bar or other places*/
+        userClientDispatch({
+          type: ACTION_TYPE.UPDATE_ACTIVE_SET,
+          payload: {
+            setId: snapshot.id,
+            title: snapshot.data().setTitle,
+          },
+        });
         setIsLoading(false);
       })
       .catch((e) => {

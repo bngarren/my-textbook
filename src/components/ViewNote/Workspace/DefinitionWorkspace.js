@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import SaveButton from "./SaveButton";
 import FlipButton from "./FlipButton";
@@ -7,161 +7,137 @@ import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 
 import DefinitionInput from "./DefinitionInput";
 
-class DefinitionWorkspace extends Component {
-  constructor(props) {
-    super(props);
+const DefinitionWorkspace = ({
+  currentTextSelected,
+  onWorkspaceSaveCard = (f) => f,
+}) => {
+  const [termValue, setTermValue] = useState("");
+  const [definitionValue, setDefinitionValue] = useState("");
+  const [activeInput, setActiveInput] = useState(null);
+  const [readyToSave, setReadyToSave] = useState(false);
+  const prevTextSelected = useRef(currentTextSelected);
 
-    this.state = {
-      currentTermValue: "",
-      currentDefinitionValue: "",
-      activeInput: null,
-      isReadyToSave: false,
-    };
-  }
+  useEffect(() => {
+    // Only act if we have an active input
+    if (activeInput === null) {
+      return;
+    }
 
-  componentDidUpdate(prevProps) {
-    const currentText = this.props.currentTextSelected;
-    const previousText = prevProps.currentTextSelected;
-
-    /* Do this if we have an Active input AND text selection from NoteView component has changed from previous
-     */
-    if (this.state.activeInput !== null && previousText !== currentText) {
-      /* Is this new text selection something more than just whitespace?
-       */
-      if (currentText !== null && currentText.trim() !== "") {
-        if (this.state.activeInput === "term") {
-          this.setState({
-            currentTermValue: currentText,
-          });
-        } else if (this.state.activeInput === "definition") {
-          this.setState({
-            currentDefinitionValue: currentText,
-          });
-        }
-      } else {
-        /* Else: this new text selection was just blank, probably intending to click out
-         */
-        this.setState({
-          //activeInput: null,
-        });
+    // Only act if the new selection is different and NOT just whitespace
+    if (
+      currentTextSelected !== null &&
+      currentTextSelected.trim() !== "" &&
+      currentTextSelected !== prevTextSelected
+    ) {
+      switch (activeInput) {
+        case "term":
+          setTermValue(currentTextSelected);
+          break;
+        case "definition":
+          setDefinitionValue(currentTextSelected);
+          break;
       }
     }
+  }, [currentTextSelected]);
 
-    this.checkReadyToSave();
-  }
+  useEffect(() => {
+    const anInputIsEmpty =
+      termValue.trim() === "" || definitionValue.trim() === "";
 
-  onInputClickAway(e) {
-    if (
-      this.props.currentTextSelected === null ||
-      this.props.currentTextSelected === ""
-    ) {
-      this.setState({
-        activeInput: null,
-      });
+    setReadyToSave(!anInputIsEmpty);
+  }, [termValue, definitionValue]);
+
+  const onInputClickAway = () => {
+    if (currentTextSelected === null || currentTextSelected === "") {
+      setActiveInput(null);
     }
-  }
+  };
 
-  onFocusInput(e) {
-    this.setState({
-      activeInput: e.target.name,
-    });
-  }
+  const onFocusInput = (e) => {
+    setActiveInput(e.target.name);
+  };
 
-  onChangeInput(e) {
+  const onChangeInput = (e) => {
     const input = e.target.name;
     if (input === "term") {
-      this.setState({
-        currentTermValue: e.target.value,
-      });
+      setTermValue(e.target.value);
     } else if (input === "definition") {
-      this.setState({
-        currentDefinitionValue: e.target.value,
-      });
+      setDefinitionValue(e.target.value);
     }
-  }
+  };
 
-  onClearTermInput(e) {
-    this.setState({
-      currentTermValue: "",
-    });
-  }
+  const onClearTermInput = () => {
+    setTermValue("");
+  };
 
-  onClearDefinitionInput(e) {
-    this.setState({
-      currentDefinitionValue: "",
-    });
-  }
+  const onClearDefinitionInput = () => {
+    setDefinitionValue("");
+  };
 
-  onFlip(e) {
-    this.setState((prevState) => ({
-      currentTermValue: prevState.currentDefinitionValue,
-      currentDefinitionValue: prevState.currentTermValue,
-    }));
-  }
-
-  anInputIsEmpty() {
-    return (
-      this.state.currentTermValue.trim() === "" ||
-      this.state.currentDefinitionValue.trim() === ""
+  const onSave = () => {
+    /*
+     * In the 1st paramater we send the card data (side one and side two)
+     * In the 2nd paramater we send a callback which will receive a result (boolean) if the
+     * addCard was successful or not
+     */
+    onWorkspaceSaveCard(
+      { side_one: termValue, side_two: definitionValue },
+      (result) => {
+        if (result) {
+          setTermValue("");
+          setDefinitionValue("");
+        }
+      }
     );
-  }
+  };
 
-  checkReadyToSave() {
-    const inputIsEmpty = this.anInputIsEmpty();
+  const onFlip = () => {
+    const term = termValue;
+    const def = definitionValue;
+    setTermValue(def);
+    setDefinitionValue(term);
+  };
 
-    if (this.state.isReadyToSave && inputIsEmpty) {
-      this.setState({
-        isReadyToSave: false,
-      });
-    } else if (!this.state.isReadyToSave && !inputIsEmpty) {
-      this.setState({
-        isReadyToSave: true,
-      });
-    }
-  }
-
-  render() {
-    return (
-      <Grid container spacing={2} justify="space-evenly">
-        <ClickAwayListener onClickAway={this.onInputClickAway.bind(this)}>
-          <Grid container item lg={10} spacing={2}>
-            <Grid item xs={12} md={6}>
-              <DefinitionInput
-                isactive={this.state.activeInput === "term"}
-                name="term"
-                label="Term"
-                onFocus={this.onFocusInput.bind(this)}
-                onChange={this.onChangeInput.bind(this)}
-                value={this.state.currentTermValue}
-                onClearInput={this.onClearTermInput.bind(this)}
-                inputIsEmpty={this.state.currentTermValue === ""}
-              />
-            </Grid>
-            <Grid item xs>
-              <DefinitionInput
-                isactive={this.state.activeInput === "definition"}
-                name="definition"
-                label="Definition"
-                onFocus={this.onFocusInput.bind(this)}
-                onChange={this.onChangeInput.bind(this)}
-                value={this.state.currentDefinitionValue}
-                onClearInput={this.onClearDefinitionInput.bind(this)}
-                inputIsEmpty={this.state.currentDefinitionValue === ""}
-              />
-            </Grid>
+  return (
+    <Grid container spacing={2} justify="space-evenly">
+      <ClickAwayListener onClickAway={onInputClickAway}>
+        <Grid container item lg={10} spacing={2}>
+          <Grid item xs={12} md={6}>
+            <DefinitionInput
+              isactive={activeInput === "term"}
+              name="term"
+              label="Term"
+              onFocus={(e) => onFocusInput(e)}
+              onChange={(e) => onChangeInput(e)}
+              value={termValue}
+              onClearInput={onClearTermInput}
+              inputIsEmpty={termValue === ""}
+            />
           </Grid>
-        </ClickAwayListener>
-        <Grid item container lg={1} sm={12} justify="center" spacing={2}>
-          <Grid item>
-            <SaveButton isEnabled={this.state.isReadyToSave} type="submit" />
-          </Grid>
-          <Grid item>
-            <FlipButton isEnabled={true} onClick={this.onFlip.bind(this)} />
+          <Grid item xs>
+            <DefinitionInput
+              isactive={activeInput === "definition"}
+              name="definition"
+              label="Definition"
+              onFocus={(e) => onFocusInput(e)}
+              onChange={(e) => onChangeInput(e)}
+              value={definitionValue}
+              onClearInput={onClearDefinitionInput}
+              inputIsEmpty={definitionValue === ""}
+            />
           </Grid>
         </Grid>
+      </ClickAwayListener>
+      <Grid item container lg={1} sm={12} justify="center" spacing={2}>
+        <Grid item>
+          <SaveButton isEnabled={readyToSave} onClick={onSave} />
+        </Grid>
+        <Grid item>
+          <FlipButton isEnabled={true} onClick={onFlip} />
+        </Grid>
       </Grid>
-    );
-  }
-}
+    </Grid>
+  );
+};
 
 export default DefinitionWorkspace;
