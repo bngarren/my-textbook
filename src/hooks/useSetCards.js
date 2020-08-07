@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useCallback } from "react";
 
 import { addCard } from "../components/Firebase";
 
@@ -17,7 +17,24 @@ export const setCardsContext = createContext(initialState);
 export const useSetCards = () => {
   const { setId, userId } = useContext(setCardsContext);
 
-  const addCardToSetCards = (side_one, side_two, callback) => {
+  /* Usually want to memoize any function that is returned from a hook so that it doesn't have to be memoized where it's called*/
+  const addCardToSetCards = useCallback(
+    (side_one, side_two, callback) => {
+      addCard(userId, setId, { side_one: side_one, side_two: side_two })
+        .then(() => {
+          if (callback && typeof callback === "function") {
+            callback(true);
+          }
+        })
+        .catch((e) => {
+          console.error(`useSetCards.js: Failed to addCard: ${e.message}`);
+          callback(false);
+        });
+    },
+    [userId, setId]
+  );
+
+  /* const addCardToSetCards = (side_one, side_two, callback) => {
     addCard(userId, setId, { side_one: side_one, side_two: side_two })
       .then(() => {
         if (callback && typeof callback === "function") {
@@ -28,7 +45,7 @@ export const useSetCards = () => {
         console.error(`useSetCards.js: Failed to addCard: ${e.message}`);
         callback(false);
       });
-  };
+  }; */
 
   return addCardToSetCards;
 };

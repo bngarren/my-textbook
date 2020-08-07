@@ -16,9 +16,9 @@ const useStyles = makeStyles({
   },
 });
 
-const ViewNoteToolbar = (props) => {
+const ViewNoteToolbar = ({ currentTextSelected }) => {
   const [currentWorkspace, setCurrentWorkspace] = useState(
-    WORKSPACES.INFO_WORKSPACE
+    WORKSPACES.EDITNOTE_WORKSPACE
   );
 
   const onToolClicked = (e) => {
@@ -35,16 +35,17 @@ const ViewNoteToolbar = (props) => {
     <>
       <Toolbar className={classes.rootToolbar} disableGutters={true}>
         <Button
-          name={WORKSPACES.INFO_WORKSPACE}
+          name={WORKSPACES.EDITNOTE_WORKSPACE}
           onClick={onToolClicked}
           className={
-            currentWorkspace === WORKSPACES.INFO_WORKSPACE
+            currentWorkspace === WORKSPACES.EDITNOTE_WORKSPACE
               ? classes.buttonSelected
               : null
           }
         >
-          <InfoOutlined />
+          Edit Note
         </Button>
+
         <Button
           name={WORKSPACES.DEFINITION_WORKSPACE}
           onClick={onToolClicked}
@@ -58,12 +59,21 @@ const ViewNoteToolbar = (props) => {
         </Button>
         <Button>Fill blank</Button>
         <Button>List</Button>
+        <Button
+          name={WORKSPACES.INFO_WORKSPACE}
+          onClick={onToolClicked}
+          className={
+            currentWorkspace === WORKSPACES.INFO_WORKSPACE
+              ? classes.buttonSelected
+              : null
+          }
+        >
+          <InfoOutlined />
+        </Button>
       </Toolbar>
       <Workspace
-        currentTextSelected={props.currentTextSelected}
+        currentTextSelected={currentTextSelected}
         currentWorkspace={currentWorkspace}
-        noteOwner={props.noteOwner}
-        setId={props.setId}
       ></Workspace>
     </>
   );

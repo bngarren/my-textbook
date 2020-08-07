@@ -5,15 +5,17 @@ import Box from "@material-ui/core/Box";
 import { useSetCards } from "../../../hooks/useSetCards";
 import InfoWorkspace from "./InfoWorkspace";
 import DefinitionWorkspace from "./DefinitionWorkspace";
+import EditNoteWorkspace from "./EditNoteWorkspace";
 
 export const WORKSPACES = Object.freeze({
   INFO_WORKSPACE: "infoWorkspace",
+  EDITNOTE_WORKSPACE: "editNoteWorkspace",
   DEFINITION_WORKSPACE: "definitionWorkspace",
 });
 
 const Workspace = ({
+  currentTextSelected,
   currentWorkspace = WORKSPACES.INFO_WORKSPACE,
-  ...props
 }) => {
   /* this custom hook helps save a card */
   const addCardToSetCards = useSetCards();
@@ -31,21 +33,22 @@ const Workspace = ({
   };
 
   const renderWorkspace = (workspace) => {
-    workspace = workspace == null ? WORKSPACES.INFO_WORKSPACE : workspace;
+    //workspace = workspace == null ? WORKSPACES.INFO_WORKSPACE : workspace;
 
     switch (workspace) {
       case WORKSPACES.INFO_WORKSPACE:
         return <InfoWorkspace />;
-
+      case WORKSPACES.EDITNOTE_WORKSPACE:
+        return <EditNoteWorkspace />;
       case WORKSPACES.DEFINITION_WORKSPACE:
         return (
           <DefinitionWorkspace
-            currentTextSelected={props.currentTextSelected}
+            currentTextSelected={currentTextSelected}
             onWorkspaceSaveCard={onWorkspaceSaveCard}
           ></DefinitionWorkspace>
         );
       default:
-        return "No workspace loaded.";
+        return null;
     }
   };
 

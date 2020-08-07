@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useHistory } from "react-router-dom";
 
 import * as ROUTES from "../../constants/routes";
@@ -6,6 +6,7 @@ import { getNoteById, getSetForNoteId } from "../Firebase";
 import { useUserClient, ACTION_TYPE } from "../../hooks/useUserClient";
 import { setCardsContext } from "../../hooks/useSetCards";
 import ViewNoteToolbar from "./Toolbar";
+import Loading from "../Loading";
 
 import Container from "@material-ui/core/Container";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -16,13 +17,14 @@ const ViewNotePage = () => {
   return <NoteView />;
 };
 
-const NoteView = (props) => {
+const NoteView = () => {
   const { id: noteId } = useParams();
   const [note, setNote] = useState();
   const [currentTextSelected, setCurrentTextSelected] = useState(null);
   const [isLoading, setIsLoading] = useState(note ? false : true);
   const history = useHistory();
   const [userClient, userClientDispatch] = useUserClient();
+  const prevActiveSet = useRef(userClient.activeSet);
 
   /* Get note from Firestore db
   - Passing the noteId in the useEffect dependency array
@@ -47,7 +49,7 @@ const NoteView = (props) => {
         // Now we need to reconcile what the "active set" for the app should be
         // e.g. consider that the user arrived to this page via direct url and
         // not through the SetPage
-        if (userClient.activeSet.setId !== snapshot.data().setId) {
+        if (prevActiveSet.current.setId !== snapshot.data().setId) {
           console.debug("ViewNote.js: using getSetForNoteId to identify set");
           // we must use the set-notes document to get the set info for this noteId
           getSetForNoteId(snapshot.id)
@@ -67,11 +69,12 @@ const NoteView = (props) => {
         belongs to should be "active", e.g. to show in Navigation bar or other places*/
               userClientDispatch({
                 type: ACTION_TYPE.UPDATE_ACTIVE_SET,
-                payload: {
-                  setId: setData.id,
-                  title: setData.data().setTitle,
-                },
+                payload: { setId: setData.id, title: setData.data().setTitle },
               });
+              prevActiveSet.current = {
+                setId: setData.id,
+                title: setData.data().setTitle,
+              };
             })
             .catch((error) => {
               console.error(
@@ -91,7 +94,7 @@ const NoteView = (props) => {
       });
 
     console.log("ViewNote/index: useEffect getNote()");
-  }, [noteId]);
+  }, [noteId, history, prevActiveSet, userClientDispatch]);
 
   /* callback for the onMouseUp event */
   /* used to see if there is a text selection within the noteView element */
@@ -133,37 +136,38 @@ const NoteView = (props) => {
     return () => document.removeEventListener("mouseup", onMouseUp);
   }, [onMouseUp]);
 
-  return (
-    <>
-      {note != null ? (
-        <>
-          <setCardsContext.Provider
-            value={{ userId: note.userId, setId: note.setId }}
-          >
-            <ViewNoteToolbar
-              currentTextSelected={currentTextSelected}
-              noteOwner={note.userId}
-              setId={note.setId}
-            />
-            <Container>
-              <FormControlLabel
-                control={<Checkbox />}
-                label="Scrollable note"
-              />
+  if (isLoading) {
+    return <Loading />;
+  } else {
+    return (
+      <>
+        {note != null ? (
+          <>
+            <setCardsContext.Provider
+              value={{ userId: note.userId, setId: note.setId }}
+            >
+              <ViewNoteToolbar currentTextSelected={currentTextSelected} />
 
-              <div id="noteView">
-                <Typography variant="h3">{note.title}</Typography>
-                <br></br>
-                <div dangerouslySetInnerHTML={{ __html: note.content }} />
-              </div>
-            </Container>
-          </setCardsContext.Provider>
-        </>
-      ) : (
-        <>Could not find this note.</>
-      )}
-    </>
-  );
+              <Container>
+                <FormControlLabel
+                  control={<Checkbox />}
+                  label="Scrollable note"
+                />
+
+                <div id="noteView">
+                  <Typography variant="h3">{note.title}</Typography>
+                  <br></br>
+                  <div dangerouslySetInnerHTML={{ __html: note.content }} />
+                </div>
+              </Container>
+            </setCardsContext.Provider>
+          </>
+        ) : (
+          <>Could not find this note.</>
+        )}
+      </>
+    );
+  }
 };
 
 export default ViewNotePage;
