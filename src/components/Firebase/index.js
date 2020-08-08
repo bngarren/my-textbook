@@ -18,6 +18,7 @@ import {
   removeSet,
   addNote,
   removeNote,
+  saveNote,
   addCard,
   removeCard,
 } from "./firebase";
@@ -42,6 +43,7 @@ export {
   removeSet,
   addNote,
   removeNote,
+  saveNote,
   addCard,
   removeCard,
 };

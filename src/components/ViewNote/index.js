@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useHistory } from "react-router-dom";
 
+import MarkdownIt from "markdown-it";
+
 import * as ROUTES from "../../constants/routes";
 import { getNoteById, getSetForNoteId } from "../Firebase";
 import { useUserClient, ACTION_TYPE } from "../../hooks/useUserClient";
-import { setCardsContext } from "../../hooks/useSetCards";
+import { NoteAndCardsContextProvider } from "../../hooks/useNoteAndCards";
 import ViewNoteToolbar from "./Toolbar";
+import MarkdownEditor from "./MarkdownEditor";
 import Loading from "../Loading";
 
 import Container from "@material-ui/core/Container";
@@ -13,18 +16,22 @@ import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Typography from "@material-ui/core/Typography";
 
+// Initialize a markdown parser
+const mdParser = new MarkdownIt(/* Markdown-it options */);
+
 const ViewNotePage = () => {
   return <NoteView />;
 };
 
 const NoteView = () => {
   const { id: noteId } = useParams();
-  const [note, setNote] = useState();
+  const [noteInDb, setNoteInDb] = useState();
   const [currentTextSelected, setCurrentTextSelected] = useState(null);
-  const [isLoading, setIsLoading] = useState(note ? false : true);
+  const [isLoading, setIsLoading] = useState(noteInDb ? false : true);
   const history = useHistory();
   const [userClient, userClientDispatch] = useUserClient();
   const prevActiveSet = useRef(userClient.activeSet);
+  const [refresh, setRefresh] = useState(false);
 
   /* Get note from Firestore db
   - Passing the noteId in the useEffect dependency array
@@ -44,7 +51,8 @@ const NoteView = () => {
         if (!snapshot.exists) {
           throw new Error(`No document found in 'notes' for noteId ${noteId}`);
         }
-        setNote(snapshot.data());
+
+        setNoteInDb({ ...snapshot.data(), noteId: snapshot.id });
 
         // Now we need to reconcile what the "active set" for the app should be
         // e.g. consider that the user arrived to this page via direct url and
@@ -65,6 +73,7 @@ const NoteView = () => {
               }
 
               const setData = snapshot.docs[0];
+
               /* let the rest of the app know that the set that this note
         belongs to should be "active", e.g. to show in Navigation bar or other places*/
               userClientDispatch({
@@ -94,7 +103,7 @@ const NoteView = () => {
       });
 
     console.log("ViewNote/index: useEffect getNote()");
-  }, [noteId, history, prevActiveSet, userClientDispatch]);
+  }, [noteId, refresh, history, prevActiveSet, userClientDispatch]);
 
   /* callback for the onMouseUp event */
   /* used to see if there is a text selection within the noteView element */
@@ -136,31 +145,48 @@ const NoteView = () => {
     return () => document.removeEventListener("mouseup", onMouseUp);
   }, [onMouseUp]);
 
+  const onSavedNote = () => {
+    setRefresh(!refresh);
+  };
+
   if (isLoading) {
     return <Loading />;
   } else {
     return (
       <>
-        {note != null ? (
+        {noteInDb != null ? (
           <>
-            <setCardsContext.Provider
-              value={{ userId: note.userId, setId: note.setId }}
+            <NoteAndCardsContextProvider
+              initialState={{
+                userId: noteInDb.userId,
+                setId: noteInDb.setId,
+                noteId: noteInDb.noteId,
+                noteOnClient: noteInDb.content,
+                noteIsEditable: false,
+                noteIsSynced: true,
+                lastSaved: noteInDb.last_modified,
+                saveNoteCallback: onSavedNote,
+                mdParser: mdParser,
+              }}
             >
               <ViewNoteToolbar currentTextSelected={currentTextSelected} />
 
               <Container>
-                <FormControlLabel
+                {/* <FormControlLabel
                   control={<Checkbox />}
                   label="Scrollable note"
-                />
+                /> */}
 
                 <div id="noteView">
-                  <Typography variant="h3">{note.title}</Typography>
+                  <Typography variant="h3">{noteInDb.title}</Typography>
                   <br></br>
-                  <div dangerouslySetInnerHTML={{ __html: note.content }} />
+
+                  <MarkdownEditor initialValue={noteInDb.content} />
+
+                  {/* <div dangerouslySetInnerHTML={{ __html: noteInDb.content }} /> */}
                 </div>
               </Container>
-            </setCardsContext.Provider>
+            </NoteAndCardsContextProvider>
           </>
         ) : (
           <>Could not find this note.</>

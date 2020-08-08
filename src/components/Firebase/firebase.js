@@ -348,6 +348,43 @@ export const removeNote = async (noteId, setId) => {
   return true;
 };
 
+export const saveNote = async (noteId, setId, noteData) => {
+  if (noteId == null) {
+    throw new Error("Missing noteId, cannot update Note");
+  } else if (setId == null) {
+    throw new Error("Missing setId, cannot update Note");
+  } else if (noteData == null) {
+    throw new Error("Missing noteData, cannot update Note");
+  }
+
+  // Very hacky way to figure out what to update the note document with
+  const { title, content } = noteData;
+
+  let writeableNoteData = {};
+  if (title && content) {
+    writeableNoteData = { title: title, content: content };
+  } else if (!title && content) {
+    writeableNoteData = { content: content };
+  } else if (title && !content) {
+    writeableNoteData = { title: title };
+  }
+
+  //ensure atomicity
+  try {
+    await db.runTransaction(async (t) => {
+      const ref_notesDoc = db.collection(ROOT_COLLECTION.NOTES).doc(noteId);
+
+      t.update(ref_notesDoc, {
+        ...writeableNoteData,
+        last_modified: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    });
+  } catch (error) {
+    throw new Error("Transaction failed for saveNote: ", error.message);
+  }
+  return true;
+};
+
 /**
  * Adds a card to the set by updating the set's document in the 'set-cards' collection
  * @param  {String} userId The userId to associate (as owner) with this card and set

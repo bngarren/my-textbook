@@ -2,10 +2,13 @@ import React from "react";
 
 import Box from "@material-ui/core/Box";
 
-import { useSetCards } from "../../../hooks/useSetCards";
 import InfoWorkspace from "./InfoWorkspace";
 import DefinitionWorkspace from "./DefinitionWorkspace";
 import EditNoteWorkspace from "./EditNoteWorkspace";
+import {
+  useNoteAndCards,
+  NOTE_AND_CARDS_ACTION,
+} from "../../../hooks/useNoteAndCards";
 
 export const WORKSPACES = Object.freeze({
   INFO_WORKSPACE: "infoWorkspace",
@@ -17,27 +20,29 @@ const Workspace = ({
   currentTextSelected,
   currentWorkspace = WORKSPACES.INFO_WORKSPACE,
 }) => {
+  const [noteAndCardsState, dispatchNoteAndCards] = useNoteAndCards();
+
   /* this custom hook helps save a card */
-  const addCardToSetCards = useSetCards();
+  const addCardToSetCards = useNoteAndCards();
 
   /* When each workspace has its 'save' button clicked, it will be handled here */
-  const onWorkspaceSaveCard = (cardData, callback) => {
-    const { side_one, side_two } = cardData;
-    // the third parameter here is an inline arrow function callback sent to the addCardToSetCards function in the useSetCards hook
-    addCardToSetCards(side_one, side_two, (result) => {
-      if (typeof callback === "function") {
-        // this is the callback provided by the specific workspace so it can know that the addCard is complete
-        callback(result);
-      }
+  const onWorkspaceSaveCard = (cardData, specificWorkspaceCallback) => {
+    dispatchNoteAndCards({
+      type: NOTE_AND_CARDS_ACTION.ADD_CARD,
+      payload: {
+        cardData: cardData,
+        callback: (result) => {
+          if (typeof specificWorkspaceCallback === "function") {
+            // this is the callback provided by the specific workspace so it can know that the addCard is complete
+            specificWorkspaceCallback(result);
+          }
+        },
+      },
     });
   };
 
   const renderWorkspace = (workspace) => {
-    //workspace = workspace == null ? WORKSPACES.INFO_WORKSPACE : workspace;
-
     switch (workspace) {
-      case WORKSPACES.INFO_WORKSPACE:
-        return <InfoWorkspace />;
       case WORKSPACES.EDITNOTE_WORKSPACE:
         return <EditNoteWorkspace />;
       case WORKSPACES.DEFINITION_WORKSPACE:
@@ -47,6 +52,8 @@ const Workspace = ({
             onWorkspaceSaveCard={onWorkspaceSaveCard}
           ></DefinitionWorkspace>
         );
+      case WORKSPACES.INFO_WORKSPACE:
+        return <InfoWorkspace />;
       default:
         return null;
     }
