@@ -5,6 +5,7 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 
 import CardView from "./CardView";
+import Loading from "../Loading";
 
 import { getDocFromSetCards, removeCard } from "../Firebase";
 
@@ -115,7 +116,11 @@ const DeckView = ({ setId }) => {
       </>
     );
   } else {
-    return <></>;
+    return (
+      <>
+        <Loading type="smallGrey" relative={true} />
+      </>
+    );
   }
 };
 

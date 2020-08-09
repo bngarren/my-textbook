@@ -13,9 +13,12 @@ import SetsView from "./SetsView";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
+import NeedToLogin from "../NeedToLogin";
 
 const useStyles = makeStyles({
-  root: {
+  setsPageRoot: {
+    display: "flex",
+    justifyContent: "center",
     paddingTop: "30px",
   },
 });
@@ -33,25 +36,24 @@ const SetsPage = () => {
   const userReadyRender = () => {
     return (
       <>
-        <Typography variant="h5">Your sets:</Typography>
         <SetsView user={user} />
       </>
     );
   };
 
   return (
-    <div className={classes.root}>
+    <div className={classes.setsPageRoot}>
       <EnumState
         currentStatus={userSessionStatus}
         forStatus={USER_SESSION_STATUS.ANON}
       >
-        Need to log in
+        <NeedToLogin />
       </EnumState>
       <EnumState
         currentStatus={userSessionStatus}
         forStatus={USER_SESSION_STATUS.USER_LOADING}
       >
-        <Loading />
+        {/* <Loading type="smallGrey" /> */}
       </EnumState>
       <EnumState
         currentStatus={userSessionStatus}

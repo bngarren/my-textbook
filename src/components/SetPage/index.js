@@ -34,10 +34,6 @@ const useStyles = makeStyles({
   gridItemDeckView: {
     //background: "rgba(235, 218, 157, 0.1)",
   },
-  editDeckButton: {
-    background: "rgba(64, 253, 1, 0.18)",
-    color: "black",
-  },
 });
 
 const SetPage = () => {
@@ -49,6 +45,8 @@ const SetPage = () => {
   const [userClient, userClientDispatch] = useUserClient(); // tracks which set is "active"
 
   const userReadyRender = () => {
+    /* NotesView and DeckView should each handle displaying their own Loading component*/
+
     return (
       <div className={classes.root}>
         <Typography variant="h6">
@@ -60,9 +58,6 @@ const SetPage = () => {
             <NotesView setId={setId} user={user} />
           </Grid>
           <Grid item className={classes.gridItemDeckView} lg xs>
-            <div>
-              <Button className={classes.editDeckButton}>Export Deck</Button>
-            </div>
             <DeckView setId={setId} />
           </Grid>
         </Grid>
@@ -81,9 +76,7 @@ const SetPage = () => {
       <EnumState
         currentStatus={userSessionStatus}
         forStatus={USER_SESSION_STATUS.USER_LOADING}
-      >
-        <Loading />
-      </EnumState>
+      ></EnumState>
       <EnumState
         currentStatus={userSessionStatus}
         forStatus={USER_SESSION_STATUS.USER_READY}

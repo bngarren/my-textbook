@@ -6,8 +6,9 @@ import IconButton from "@material-ui/core/IconButton";
 import PlaylistAdd from "@material-ui/icons/PlaylistAdd";
 
 import { addSet } from "../../Firebase";
+import { InputAdornment } from "@material-ui/core";
 
-const AddSetForm = ({ user, onNewSetAdded = (f) => f }) => {
+const AddSetForm = ({ user, onPreAdd = (f) => f, onPostAdd = (f) => f }) => {
   const [value, setValue] = useState("");
 
   const handleChange = (e) => {
@@ -21,6 +22,7 @@ const AddSetForm = ({ user, onNewSetAdded = (f) => f }) => {
       const title = value;
       const userId = user.uid;
 
+      onPreAdd();
       handleAddSet(userId, { title: title });
     }
   };
@@ -28,7 +30,7 @@ const AddSetForm = ({ user, onNewSetAdded = (f) => f }) => {
   const handleAddSet = (userId, data) => {
     addSet(userId, data)
       .then((res) => {
-        onNewSetAdded(res); //res is true/false if transaction completed
+        onPostAdd(res); //res is true/false if transaction completed
       })
       .catch((e) => {
         console.error("AddSet.js: Error adding new set: ", e.message);
@@ -42,16 +44,21 @@ const AddSetForm = ({ user, onNewSetAdded = (f) => f }) => {
       <form onSubmit={handleSubmit}>
         <FormControl error>
           <TextField
-            variant="outlined"
             label="Add Set"
             value={value}
             onChange={handleChange}
             size="small"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton type="submit">
+                    {value.length > 0 && <PlaylistAdd />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
         </FormControl>
-        <IconButton type="submit">
-          <PlaylistAdd />
-        </IconButton>
       </form>
     </>
   );

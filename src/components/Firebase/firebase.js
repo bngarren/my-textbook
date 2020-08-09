@@ -127,10 +127,12 @@ export const addSet = async (userId, data) => {
       await t.set(
         ref_userSetsDoc,
         {
-          set_created_on: firebase.firestore.FieldValue.serverTimestamp(),
           sets_count: firebase.firestore.FieldValue.increment(1),
           sets: {
-            [setId]: { title: title },
+            [setId]: {
+              title: title,
+              created_on: firebase.firestore.FieldValue.serverTimestamp(),
+            },
           },
         },
         { merge: true }

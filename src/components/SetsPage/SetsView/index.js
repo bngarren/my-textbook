@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { getDocFromUserSets, removeSet } from "../../Firebase";
 import Loading from "../../Loading";
 
+import { makeStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
@@ -16,7 +17,35 @@ import { useUserClient, ACTION_TYPE } from "../../../hooks/useUserClient";
 
 import AddSetForm from "../AddSet";
 
+const useStyles = makeStyles({
+  setViewRoot: {
+    flexGrow: "1",
+    minWidth: "350px",
+    maxWidth: "800px",
+    display: "flex",
+    flexDirection: "column",
+  },
+  addSetFormDiv: {
+    alignSelf: "flex-end",
+    width: "325px",
+    display: "flex",
+    justifyContent: "flex-end",
+  },
+  noSetsDiv: {
+    alignSelf: "center",
+    padding: "30px 0",
+  },
+  setsListRoot: {},
+  setsListItem: {
+    borderLeft: "3px solid transparent",
+    "&:hover": {
+      borderLeft: "3px solid rgb(43, 140, 236)",
+    },
+  },
+});
+
 const SetsView = ({ user }) => {
+  const classes = useStyles();
   const userSetsDoc = useRef(null);
   const [sets, setSets] = useState(null);
   const [refresh, setRefresh] = useState(false); // used to trigger re-render for SetsView
@@ -62,9 +91,14 @@ const SetsView = ({ user }) => {
     }
   }, [user, refresh]);
 
+  /* Helper function that takes the 'sets' field from the database document
+   * which is an Object with a bunch of key-value entries for each set and
+   * turns it into an array of each set object that is easier to iterate
+   */
   const setsArrayFromObject = (setsObject) => {
+    // get key-value pairs
     const entries = Object.entries(setsObject);
-
+    // result array
     let res = [];
 
     for (const [key, value] of entries) {
@@ -79,6 +113,10 @@ const SetsView = ({ user }) => {
     return true;
   };
 
+  const triggerIsLoading = () => {
+    setIsLoading(true);
+  };
+
   const onNewSetAdded = (updatedUserSetsDoc) => {
     if (updatedUserSetsDoc) {
       setRefresh(!refresh);
@@ -90,6 +128,7 @@ const SetsView = ({ user }) => {
     event.preventDefault();
 
     if (setId != null) {
+      setIsLoading(true);
       removeSet(user.uid, setId)
         .then(() => {
           // send refresh signal to re-render
@@ -107,58 +146,60 @@ const SetsView = ({ user }) => {
     }
   };
 
-  // TOGGLE ACTIVE SET
-  /*  const makeActiveSet = (event, setId, title = "!Error!") => {
-    event.preventDefault();
-
-    if (!setId) return;
-
-    // If this set is already active, toggle it off (i.e. clear the active set)
-    if (userClient.activeSet.setId === setId) {
-      userClientDispatch({
-        type: ACTION_TYPE.CLEAR_ACTIVE_SET,
-      });
-    } else {
-      userClientDispatch({
-        type: ACTION_TYPE.UPDATE_ACTIVE_SET,
-        payload: { setId: setId, title: title },
-      });
-    }
-  }; */
-
+  /* --- RETURN () --- --- --- --- --- --- --- */
   if (!isLoading) {
     return (
-      <>
-        <AddSetForm user={user} onNewSetAdded={onNewSetAdded} />
+      <div className={classes.setViewRoot}>
+        <div className={classes.addSetFormDiv}>
+          <AddSetForm
+            user={user}
+            onPreAdd={triggerIsLoading}
+            onPostAdd={onNewSetAdded}
+          />
+        </div>
 
         {sets != null && sets.length > 0 ? (
           <SetsList sets={sets} onRemoveSet={onRemoveSet} />
         ) : (
-          "Add your first set!"
+          <div className={classes.noSetsDiv}>
+            You have no sets. Add your first set!
+          </div>
         )}
-      </>
+      </div>
     );
   } else {
     return (
-      <>
-        <Loading />
-        {sets != null && sets.length > 1 ? <SetsList sets={sets} /> : null}
-      </>
+      <div className={classes.setViewRoot}>
+        <Loading type="smallGrey" />
+        {/*sets != null && sets.length > 1 ? <SetsList sets={sets} /> : null*/}
+      </div>
     );
   }
 };
 
+const getDateStringFromTimestamp = (timestamp) => {
+  const date = new Date(timestamp.seconds * 1000);
+  return date.toLocaleDateString();
+};
+
 const SetsList = ({ sets, onRemoveSet = (e, f) => f }) => {
+  const classes = useStyles();
   return (
-    <List>
+    <List className={classes.setsListRoot}>
       {sets.map((setItem) => (
         <ListItem
           key={setItem.setId}
           divider={true}
           component={Link}
           to={`${SET_PAGE}/${setItem.setId}`}
+          classes={{
+            container: classes.setsListItem,
+          }}
         >
-          <ListItemText primary={setItem.data.title}></ListItemText>
+          <ListItemText
+            primary={setItem.data.title}
+            secondary={getDateStringFromTimestamp(setItem.data.created_on)}
+          ></ListItemText>
           <ListItemSecondaryAction>
             <IconButton onClick={(e) => onRemoveSet(e, setItem.setId)}>
               <DeleteForeverIcon />

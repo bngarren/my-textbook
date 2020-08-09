@@ -13,6 +13,7 @@ import { NOTE_PAGE } from "../../../constants/routes";
 import { getDocFromSetNotes, removeNote } from "../../Firebase";
 import { useUserClient, ACTION_TYPE } from "../../../hooks/useUserClient";
 import AddNoteForm from "../AddNote";
+import Loading from "../../Loading";
 
 const useStyles = makeStyles({
   notesListRoot: {
@@ -147,7 +148,11 @@ const NotesView = ({ setId, user }) => {
       </>
     );
   } else {
-    return <></>;
+    return (
+      <>
+        <Loading type="smallGrey" relative={true} />
+      </>
+    );
   }
 };
 
