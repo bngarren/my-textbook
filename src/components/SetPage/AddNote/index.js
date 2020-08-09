@@ -4,6 +4,7 @@ import FormControl from "@material-ui/core/FormControl";
 import TextField from "@material-ui/core/TextField";
 import IconButton from "@material-ui/core/IconButton";
 import NoteAddIcon from "@material-ui/icons/NoteAdd";
+import { InputAdornment } from "@material-ui/core";
 
 import { addNote } from "../../Firebase";
 
@@ -51,11 +52,17 @@ const AddNoteForm = ({ user, setId, onNewNoteAdded = (f) => f }) => {
             value={value}
             onChange={handleChange}
             size="small"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton type="submit">
+                    {value.length > 0 && <NoteAddIcon />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
         </FormControl>
-        <IconButton type="submit">
-          <NoteAddIcon />
-        </IconButton>
       </form>
     </>
   );

@@ -7,7 +7,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
-import { ListItemSecondaryAction, IconButton } from "@material-ui/core";
+import { ListItemSecondaryAction, IconButton, Button } from "@material-ui/core";
 
 import { NOTE_PAGE } from "../../../constants/routes";
 import { getDocFromSetNotes, removeNote } from "../../Firebase";
@@ -18,6 +18,20 @@ import Loading from "../../Loading";
 const useStyles = makeStyles({
   notesListRoot: {
     width: "400px",
+  },
+  notesListItemNote: {
+    border: "1px solid #e8dbdb",
+    borderLeft: "8px solid #448dff",
+    borderRadius: "5px",
+    marginBottom: "0.5em",
+    "&:hover": {
+      borderLeft: "8px solid #1b5bbf",
+    },
+  },
+  notesListItemAddNote: {
+    marginBottom: "1em",
+    paddingRight: "0",
+    justifyContent: "flex-end",
   },
 });
 
@@ -121,18 +135,29 @@ const NotesView = ({ setId, user }) => {
     }
   };
 
+  const getEmptyAddNoteArray = () => {
+    return [...Array(setInfo.max_notes - notes.length)];
+  };
+
   if (!isLoading) {
     return (
       <>
-        <AddNoteForm
-          user={user}
-          setId={setId}
-          onNewNoteAdded={onNewNoteAdded}
-        />
         {notes !== null && (
           <List className={classes.notesListRoot}>
+            <ListItem className={classes.notesListItemAddNote}>
+              <AddNoteForm
+                user={user}
+                setId={setId}
+                onNewNoteAdded={onNewNoteAdded}
+              />
+            </ListItem>
             {notes.map((note) => (
-              <ListItem key={note.noteId}>
+              <ListItem
+                key={note.noteId}
+                classes={{
+                  container: classes.notesListItemNote,
+                }}
+              >
                 <Link to={`${NOTE_PAGE}/${note.noteId}`}>
                   <ListItemText primary={note.data.title} />
                 </Link>
