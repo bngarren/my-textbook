@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
+import { useHotkeys } from "react-hotkeys-hook";
+
 import SaveButton from "./SaveButton";
 import FlipButton from "./FlipButton";
 import Grid from "@material-ui/core/Grid";
@@ -40,7 +42,44 @@ const DefinitionWorkspace = ({
     }
   }, [currentTextSelected]);
 
+  const handleHotkeyFor = (inputBox, shouldAddend) => {
+    if (activeInput !== null || currentTextSelected == null) {
+      return;
+    }
+
+    switch (inputBox) {
+      case "term":
+        shouldAddend
+          ? setTermValue((value) => value + "\n" + currentTextSelected)
+          : setTermValue(currentTextSelected);
+        break;
+      case "definition":
+        shouldAddend
+          ? setDefinitionValue((value) => value + "\n" + currentTextSelected)
+          : setDefinitionValue(currentTextSelected);
+        break;
+      default:
+        return;
+    }
+  };
+
+  /* ------ HOT KEYS ---- */
+  useHotkeys("q", () => handleHotkeyFor("term", false), [currentTextSelected]);
+  useHotkeys("alt+q", () => handleHotkeyFor("term", true), [
+    currentTextSelected,
+  ]);
+  useHotkeys("w", () => handleHotkeyFor("definition", false), [
+    currentTextSelected,
+  ]);
+  useHotkeys("alt+w", () => handleHotkeyFor("definition", true), [
+    currentTextSelected,
+  ]);
+  /* -------------------------- */
+
   useEffect(() => {
+    if (termValue == null || definitionValue == null) {
+      return;
+    }
     const anInputIsEmpty =
       termValue.trim() === "" || definitionValue.trim() === "";
 
