@@ -2,28 +2,50 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useHistory } from "react-router-dom";
 
 import MarkdownIt from "markdown-it";
+import clsx from "clsx";
 
 import * as ROUTES from "../../constants/routes";
 import { getNoteById, getSetForNoteId } from "../Firebase";
 import { useUserClient, ACTION_TYPE } from "../../hooks/useUserClient";
 import { NoteAndCardsContextProvider } from "../../hooks/useNoteAndCards";
 import ViewNoteToolbar from "./Toolbar";
+import ToolDrawer from "./ToolDrawer";
 import MarkdownEditor from "./MarkdownEditor";
 import Loading from "../Loading";
 
+import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Typography from "@material-ui/core/Typography";
+import Switch from "@material-ui/core/Switch";
+import Grid from "@material-ui/core/Grid";
 
 // Initialize a markdown parser
 const mdParser = new MarkdownIt(/* Markdown-it options */);
+
+const useStyles = makeStyles({
+  root: {
+    display: "flex",
+  },
+  noteViewContainer: {
+    flexGrow: 1,
+  },
+  noteViewContainerShifted: {
+    marginRight: "450px",
+  },
+  toggleBtnGridRoot: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
 
 const ViewNotePage = () => {
   return <NoteView />;
 };
 
 const NoteView = () => {
+  const classes = useStyles();
   const { id: noteId } = useParams();
   const [noteInDb, setNoteInDb] = useState();
   const [currentTextSelected, setCurrentTextSelected] = useState(null);
@@ -32,6 +54,7 @@ const NoteView = () => {
   const [userClient, userClientDispatch] = useUserClient();
   const prevActiveSet = useRef(userClient.activeSet);
   const [refresh, setRefresh] = useState(false);
+  const [toolDrawerOpen, setToolDrawerOpen] = useState(false);
 
   /* Get note from Firestore db
   - Passing the noteId in the useEffect dependency array
@@ -149,13 +172,32 @@ const NoteView = () => {
     setRefresh(!refresh);
   };
 
+  const onToggleToolDrawer = () => {
+    setToolDrawerOpen(!toolDrawerOpen);
+  };
+
+  // CLSX helper for styling
+  const noteViewContainerClasses = clsx();
+
   if (isLoading) {
     return <Loading />;
   } else {
     return (
       <>
+        <Grid
+          className={classes.toggleBtnGridRoot}
+          container
+          alignItems="center"
+          spacing={1}
+        >
+          <Grid item>Edit Note</Grid>
+          <Grid item>
+            <Switch checked={toolDrawerOpen} onChange={onToggleToolDrawer} />
+          </Grid>
+          <Grid item>Markup</Grid>
+        </Grid>
         {noteInDb != null ? (
-          <>
+          <div className={classes.root}>
             <NoteAndCardsContextProvider
               initialState={{
                 userId: noteInDb.userId,
@@ -169,14 +211,13 @@ const NoteView = () => {
                 mdParser: mdParser,
               }}
             >
-              <ViewNoteToolbar currentTextSelected={currentTextSelected} />
+              {/* <ViewNoteToolbar currentTextSelected={currentTextSelected} /> */}
 
-              <Container>
-                {/* <FormControlLabel
-                  control={<Checkbox />}
-                  label="Scrollable note"
-                /> */}
-
+              <Container
+                className={clsx(classes.noteViewContainer, {
+                  [classes.noteViewContainerShifted]: toolDrawerOpen,
+                })}
+              >
                 <div id="noteView">
                   <Typography variant="h3">{noteInDb.title}</Typography>
                   <br></br>
@@ -186,8 +227,9 @@ const NoteView = () => {
                   {/* <div dangerouslySetInnerHTML={{ __html: noteInDb.content }} /> */}
                 </div>
               </Container>
+              <ToolDrawer open={toolDrawerOpen} />
             </NoteAndCardsContextProvider>
-          </>
+          </div>
         ) : (
           <>Could not find this note.</>
         )}

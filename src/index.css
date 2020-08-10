@@ -18,6 +18,4 @@ code {
 
 #noteView {
   padding-top: 30px;
-  max-height: 600px;
-  overflow: auto;
 }

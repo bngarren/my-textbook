@@ -9,6 +9,7 @@ import {
 } from "../../hooks/useSession";
 
 import { makeStyles } from "@material-ui/core/styles";
+import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
 
@@ -66,7 +67,7 @@ const SetPage = () => {
   };
 
   return (
-    <div>
+    <Container>
       <EnumState
         currentStatus={userSessionStatus}
         forStatus={USER_SESSION_STATUS.ANON}
@@ -83,7 +84,7 @@ const SetPage = () => {
       >
         {userReadyRender()}
       </EnumState>
-    </div>
+    </Container>
   );
 };
 

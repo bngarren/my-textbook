@@ -73,7 +73,7 @@ const App = () => {
         >
           <UserClientContext>
             <Navigation />
-            <Container className={classes.root}>
+            <div className={classes.root}>
               <Switch>
                 <Route exact path={ROUTES.HOME} component={HomePage} />
                 <Route path={ROUTES.SETS_PAGE} component={SetsPage} />
@@ -83,7 +83,7 @@ const App = () => {
                 <Route path={ROUTES.SIGNIN_PAGE} component={SignInPage} />
                 <Route path={ROUTES.SIGNOUT_PAGE} component={SignOutPage} />
               </Switch>
-            </Container>
+            </div>
           </UserClientContext>
         </UserSessionContext>
       </Router>
