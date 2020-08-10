@@ -140,8 +140,8 @@ const DefinitionWorkspace = ({
   return (
     <Grid container spacing={2} justify="space-evenly">
       <ClickAwayListener onClickAway={onInputClickAway}>
-        <Grid container item lg={10} spacing={2}>
-          <Grid item xs={12} md={6}>
+        <Grid container item spacing={2}>
+          <Grid item xs={12}>
             <DefinitionInput
               isactive={activeInput === "term"}
               name="term"
@@ -167,7 +167,7 @@ const DefinitionWorkspace = ({
           </Grid>
         </Grid>
       </ClickAwayListener>
-      <Grid item container lg={1} sm={12} justify="center" spacing={2}>
+      <Grid item container xs={12} justify="center" spacing={2}>
         <Grid item>
           <SaveButton isEnabled={readyToSave} onClick={onSave} />
         </Grid>

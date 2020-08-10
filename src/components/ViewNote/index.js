@@ -38,6 +38,16 @@ const useStyles = makeStyles({
     alignItems: "center",
     justifyContent: "center",
   },
+  switchBase: {
+    "&$switchChecked": {
+      color: "#ff5722",
+    },
+    "&$switchChecked + $switchTrack": {
+      backgroundColor: "#ff5722",
+    },
+  },
+  switchTrack: {},
+  switchChecked: {},
 });
 
 const ViewNotePage = () => {
@@ -190,11 +200,23 @@ const NoteView = () => {
           alignItems="center"
           spacing={1}
         >
-          <Grid item>Edit Note</Grid>
           <Grid item>
-            <Switch checked={toolDrawerOpen} onChange={onToggleToolDrawer} />
+            <Typography>Edit Note</Typography>
           </Grid>
-          <Grid item>Markup</Grid>
+          <Grid item>
+            <Switch
+              checked={toolDrawerOpen}
+              onChange={onToggleToolDrawer}
+              classes={{
+                switchBase: classes.switchBase,
+                track: classes.switchTrack,
+                checked: classes.switchChecked,
+              }}
+            />
+          </Grid>
+          <Grid item>
+            <Typography>Markup</Typography>
+          </Grid>
         </Grid>
         {noteInDb != null ? (
           <div className={classes.root}>
@@ -204,15 +226,12 @@ const NoteView = () => {
                 setId: noteInDb.setId,
                 noteId: noteInDb.noteId,
                 noteOnClient: noteInDb.content,
-                noteIsEditable: false,
                 noteIsSynced: true,
                 lastSaved: noteInDb.last_modified,
                 saveNoteCallback: onSavedNote,
                 mdParser: mdParser,
               }}
             >
-              {/* <ViewNoteToolbar currentTextSelected={currentTextSelected} /> */}
-
               <Container
                 className={clsx(classes.noteViewContainer, {
                   [classes.noteViewContainerShifted]: toolDrawerOpen,
@@ -222,12 +241,17 @@ const NoteView = () => {
                   <Typography variant="h3">{noteInDb.title}</Typography>
                   <br></br>
 
-                  <MarkdownEditor initialValue={noteInDb.content} />
+                  <MarkdownEditor
+                    initialValue={noteInDb.content}
+                    isEditable={!toolDrawerOpen}
+                  />
 
                   {/* <div dangerouslySetInnerHTML={{ __html: noteInDb.content }} /> */}
                 </div>
               </Container>
-              <ToolDrawer open={toolDrawerOpen} />
+              <ToolDrawer open={toolDrawerOpen}>
+                <ViewNoteToolbar currentTextSelected={currentTextSelected} />
+              </ToolDrawer>
             </NoteAndCardsContextProvider>
           </div>
         ) : (

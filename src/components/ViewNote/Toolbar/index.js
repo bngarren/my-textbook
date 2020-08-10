@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 
+import clsx from "clsx";
+
 import Button from "@material-ui/core/Button";
 import Toolbar from "@material-ui/core/Toolbar";
 import { makeStyles } from "@material-ui/core/styles";
@@ -13,8 +15,15 @@ import {
 
 const useStyles = makeStyles({
   rootToolbar: {
-    justifyContent: "center",
+    justifyContent: "flex-start",
+    borderRadius: "4px",
+    marginBottom: "30px",
   },
+  buttonTool: {
+    border: "1px solid grey",
+    marginRight: "3px",
+  },
+  buttonInfo: {},
   buttonSelected: {
     borderBottom: "3px solid #1c1c1c",
   },
@@ -22,7 +31,7 @@ const useStyles = makeStyles({
 
 const ViewNoteToolbar = ({ currentTextSelected }) => {
   const [currentWorkspace, setCurrentWorkspace] = useState(
-    WORKSPACES.EDITNOTE_WORKSPACE
+    WORKSPACES.INFO_WORKSPACE
   );
   const [noteAndCardsState, dispatchNoteAndCards] = useNoteAndCards();
 
@@ -55,38 +64,30 @@ const ViewNoteToolbar = ({ currentTextSelected }) => {
     <>
       <Toolbar className={classes.rootToolbar} disableGutters={true}>
         <Button
-          name={WORKSPACES.EDITNOTE_WORKSPACE}
-          onClick={onToolClicked}
-          className={
-            currentWorkspace === WORKSPACES.EDITNOTE_WORKSPACE
-              ? classes.buttonSelected
-              : null
-          }
-        >
-          Edit Note
-        </Button>
-
-        <Button
           name={WORKSPACES.DEFINITION_WORKSPACE}
           onClick={onToolClicked}
-          className={
-            currentWorkspace === WORKSPACES.DEFINITION_WORKSPACE
-              ? classes.buttonSelected
-              : null
-          }
+          className={clsx(classes.buttonTool, {
+            [classes.buttonSelected]:
+              currentWorkspace === WORKSPACES.DEFINITION_WORKSPACE,
+          })}
         >
           Definition
         </Button>
-        <Button>Fill blank</Button>
-        <Button>List</Button>
+        <Button
+          className={clsx(classes.buttonTool, {
+            [classes.buttonSelected]:
+              currentWorkspace === WORKSPACES.FILLBLANK_WORKSPACE,
+          })}
+        >
+          Fill blank
+        </Button>
         <Button
           name={WORKSPACES.INFO_WORKSPACE}
           onClick={onToolClicked}
-          className={
-            currentWorkspace === WORKSPACES.INFO_WORKSPACE
-              ? classes.buttonSelected
-              : null
-          }
+          className={clsx(classes.buttonInfo, {
+            [classes.buttonSelected]:
+              currentWorkspace === WORKSPACES.INFO_WORKSPACE,
+          })}
         >
           <InfoOutlined />
         </Button>

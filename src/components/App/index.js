@@ -25,7 +25,9 @@ import {
 import UserClientContext from "../../hooks/useUserClient";
 
 const useStyles = makeStyles({
-  root: {},
+  root: {
+    paddingTop: "30px",
+  },
   backdrop: {
     backgroundColor: "rgba(232, 232, 232, 0.2)",
   },

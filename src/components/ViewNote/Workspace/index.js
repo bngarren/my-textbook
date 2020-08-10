@@ -12,8 +12,8 @@ import {
 
 export const WORKSPACES = Object.freeze({
   INFO_WORKSPACE: "infoWorkspace",
-  EDITNOTE_WORKSPACE: "editNoteWorkspace",
   DEFINITION_WORKSPACE: "definitionWorkspace",
+  FILLBLANK_WORKSPACE: "fillBlankWorkspace",
 });
 
 const Workspace = ({
@@ -43,8 +43,6 @@ const Workspace = ({
 
   const renderWorkspace = (workspace) => {
     switch (workspace) {
-      case WORKSPACES.EDITNOTE_WORKSPACE:
-        return <EditNoteWorkspace />;
       case WORKSPACES.DEFINITION_WORKSPACE:
         return (
           <DefinitionWorkspace

@@ -33,7 +33,6 @@ const initialNullState = {
   userId: null,
   noteId: null,
   noteOnClient: "",
-  noteIsEditable: true,
   noteIsSynced: true,
   lastSaved: null,
   saveNoteCallback: (f) => f,

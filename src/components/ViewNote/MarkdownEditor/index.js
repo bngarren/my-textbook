@@ -19,7 +19,7 @@ const EDITOR_PLUGINS = [
   "link",
 ];
 
-const MarkdownEditor = ({ initialValue }) => {
+const MarkdownEditor = ({ initialValue, isEditable }) => {
   const [value, setValue] = useState(initialValue || "");
   const [noteAndCardsState, dispatchNoteAndCards] = useNoteAndCards();
 
@@ -32,7 +32,7 @@ const MarkdownEditor = ({ initialValue }) => {
     });
   };
 
-  if (noteAndCardsState.noteIsEditable) {
+  if (isEditable) {
     return (
       <MdEditor
         value={value}

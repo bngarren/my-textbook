@@ -13,10 +13,13 @@ const useStyles = makeStyles({
   drawerPaper: {
     top: "15vh",
     width: drawerWidth,
+    padding: "0 3px",
+    borderLeft: "none",
+    borderTop: "5px solid #ff5722",
   },
 });
 
-const ToolDrawer = ({ open }) => {
+const ToolDrawer = ({ open, children }) => {
   const classes = useStyles();
 
   return (
@@ -29,7 +32,7 @@ const ToolDrawer = ({ open }) => {
       anchor="right"
       open={open}
     >
-      Drawer content
+      {children}
     </Drawer>
   );
 };

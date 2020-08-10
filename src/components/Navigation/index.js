@@ -26,7 +26,7 @@ const useStyles = makeStyles({
     flexGrow: 1,
   },
   appBarRoot: {
-    backgroundColor: "transparent",
+    background: "transparent",
   },
   logo: {
     minWidth: "0",
@@ -37,7 +37,7 @@ const useStyles = makeStyles({
   },
   doubleArrow: {
     fontSize: "small",
-    color: "green",
+    color: "#ff5722",
   },
   usernameText: {
     color: "black",
@@ -79,12 +79,12 @@ const Navigation = () => {
 
   return (
     <div className={classes.root}>
-      <AppBar className={classes.appBarRoot} position="static">
+      <AppBar className={classes.appBarRoot} position="static" elevation={1}>
         <Container>
           <Toolbar>
             <Link to={ROUTES.HOME}>
               <Button className={classes.logo}>
-                <FreeBreakfast></FreeBreakfast>
+                <FreeBreakfast fontSize="large"></FreeBreakfast>
               </Button>
             </Link>
             <Divider orientation="vertical" variant="middle" flexItem />
@@ -107,7 +107,7 @@ const Navigation = () => {
             {userSession ? (
               <div className={classes.rightContent}>
                 <IconButton onClick={handleMenu} label="test">
-                  <AccountCircle />
+                  <AccountCircle fontSize="large" />
                 </IconButton>
                 {user && (
                   <Typography variant="body1" className={classes.usernameText}>

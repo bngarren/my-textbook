@@ -11,18 +11,18 @@ const useStyles = makeStyles({
   definitionInput: {},
   termInput: {},
   isActive: {
-    background: "rgba(209, 253, 164, 0.1)",
+    background: "rgba(225, 245, 254, 0.3)",
     transition: "background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
   },
   outlinedInput: {
     padding: "15px 12px 15px 8px",
     "&$focused $notchedOutlineActive": {
       border: "1px solid rgba(15, 15, 15, 0.6)",
-      borderBottom: "2px solid rgba(61, 122, 0, 0.7)",
+      borderBottom: "2px solid rgba(137, 137, 137, 0.7)",
     },
   },
   notchedOutlineActive: {
-    borderBottom: "2px solid rgba(61, 122, 0, 0.7)",
+    borderBottom: "2px solid rgba(137, 137, 137, 0.7)",
     boxShadow: "0 3px 5px 2px rgba(2, 2, 2, 0.1)",
   },
   notchedOutlineInactive: {

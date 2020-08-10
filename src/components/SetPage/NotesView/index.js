@@ -21,11 +21,11 @@ const useStyles = makeStyles({
   },
   notesListItemNote: {
     border: "1px solid #e8dbdb",
-    borderLeft: "8px solid #448dff",
+    borderLeft: "8px solid #03a9f4",
     borderRadius: "5px",
     marginBottom: "0.5em",
     "&:hover": {
-      borderLeft: "8px solid #1b5bbf",
+      borderLeft: "8px solid #0288d1",
     },
   },
   notesListItemAddNote: {
