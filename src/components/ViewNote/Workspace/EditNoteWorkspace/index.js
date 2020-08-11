@@ -20,6 +20,10 @@ const useStyles = makeStyles({
   },
 });
 
+/*
+ ****** NOT CURRENTLY IMPLEMENTED SINCE COMMIT 491ace87452624dce7b73e653acc20e5e5738bbe *******
+ */
+
 const EditNoteWorkspace = () => {
   const classes = useStyles();
   const [noteAndCardsState, dispatchNoteAndCards] = useNoteAndCards();

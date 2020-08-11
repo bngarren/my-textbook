@@ -19,7 +19,6 @@ import { addCard, saveNote } from "../components/Firebase";
 /* An enum that formalizes the different action types that can be called with dispatch*/
 export const NOTE_AND_CARDS_ACTION = Object.freeze({
   ADD_CARD: "addCard",
-  UPDATE_NOTE_IS_EDITABLE: "updateNoteIsEditable",
   UPDATE_NOTE_ON_CLIENT: "updateNoteOnClient",
   SAVE_NOTE: "saveNote",
 });
@@ -93,16 +92,15 @@ const Reducer = (state, action) => {
         noteOnClient: action.payload,
         noteIsSynced: false,
       };
-    case NOTE_AND_CARDS_ACTION.UPDATE_NOTE_IS_EDITABLE:
-      return {
-        ...state,
-        noteIsEditable: action.payload,
-      };
+
     case NOTE_AND_CARDS_ACTION.SAVE_NOTE:
       saveNote(state.noteId, state.setId, action.payload)
         .then(() => {
           state.saveNoteCallback();
-          return state;
+          return {
+            ...state,
+            noteIsSynced: true,
+          };
         })
         .catch((e) => {
           console.error(`useNoteAndCards.js: Failed to saveNote: ${e.message}`);

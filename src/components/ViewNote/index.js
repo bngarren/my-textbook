@@ -10,7 +10,6 @@ import { useUserClient, ACTION_TYPE } from "../../hooks/useUserClient";
 import { NoteAndCardsContextProvider } from "../../hooks/useNoteAndCards";
 import ViewNoteToolbar from "./Toolbar";
 import ToolDrawer from "./ToolDrawer";
-import MarkdownEditor from "./MarkdownEditor";
 import Loading from "../Loading";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -20,9 +19,7 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Typography from "@material-ui/core/Typography";
 import Switch from "@material-ui/core/Switch";
 import Grid from "@material-ui/core/Grid";
-
-// Initialize a markdown parser
-const mdParser = new MarkdownIt(/* Markdown-it options */);
+import QuillEditor from "./QuillEditor";
 
 const useStyles = makeStyles({
   root: {
@@ -35,8 +32,8 @@ const useStyles = makeStyles({
     marginRight: "450px",
   },
   toggleBtnGridRoot: {
-    alignItems: "center",
     justifyContent: "center",
+    width: "99%",
   },
   switchBase: {
     "&$switchChecked": {
@@ -48,6 +45,7 @@ const useStyles = makeStyles({
   },
   switchTrack: {},
   switchChecked: {},
+  noteTitle: {},
 });
 
 const ViewNotePage = () => {
@@ -190,7 +188,7 @@ const NoteView = () => {
   const noteViewContainerClasses = clsx();
 
   if (isLoading) {
-    return <Loading />;
+    return <Loading type="smallGrey" />;
   } else {
     return (
       <>
@@ -229,7 +227,6 @@ const NoteView = () => {
                 noteIsSynced: true,
                 lastSaved: noteInDb.last_modified,
                 saveNoteCallback: onSavedNote,
-                mdParser: mdParser,
               }}
             >
               <Container
@@ -237,13 +234,13 @@ const NoteView = () => {
                   [classes.noteViewContainerShifted]: toolDrawerOpen,
                 })}
               >
-                <div id="noteView">
-                  <Typography variant="h3">{noteInDb.title}</Typography>
-                  <br></br>
-
-                  <MarkdownEditor
+                <div id="noteView" className={classes.noteView}>
+                  <Typography variant="h5" className={classes.noteTitle}>
+                    {noteInDb.title}
+                  </Typography>
+                  <QuillEditor
                     initialValue={noteInDb.content}
-                    isEditable={!toolDrawerOpen}
+                    readOnly={toolDrawerOpen}
                   />
 
                   {/* <div dangerouslySetInnerHTML={{ __html: noteInDb.content }} /> */}

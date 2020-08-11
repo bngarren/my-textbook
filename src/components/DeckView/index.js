@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from "react";
 
 import { makeStyles } from "@material-ui/core/styles";
+import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
+import Toolbar from "@material-ui/core/Toolbar";
+import Button from "@material-ui/core/Button";
+import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
+import ViewStreamIcon from "@material-ui/icons/ViewStream";
+import Tooltip from "@material-ui/core/Tooltip";
 
 import CardView from "./CardView";
 import Loading from "../Loading";
@@ -22,6 +28,7 @@ const DeckView = ({ setId }) => {
   const [cards, setCards] = useState(null);
   const [isLoading, setIsLoading] = useState(cards ? false : true);
   const [refresh, setRefresh] = useState(false); // to trigger re-render
+  const [compactView, setCompactView] = useState(true);
 
   useEffect(() => {
     if (setId == null || setId.trim() === "") {
@@ -98,10 +105,56 @@ const DeckView = ({ setId }) => {
     }
   };
 
-  if (!isLoading) {
+  const toolbar = () => {
     return (
-      <>
-        {cards !== null && (
+      <Toolbar>
+        <Tooltip
+          title={compactView ? "Switch to Card View" : "Switch to Compact View"}
+        >
+          <Button
+            onClick={() => {
+              setCompactView(!compactView);
+            }}
+          >
+            {compactView ? <ViewStreamIcon alt="test" /> : <ViewHeadlineIcon />}
+          </Button>
+        </Tooltip>
+      </Toolbar>
+    );
+  };
+
+  if (!isLoading) {
+    if (cards == null) {
+      return;
+    }
+
+    if (compactView) {
+      return (
+        <>
+          {toolbar()}
+          <List>
+            {cards.map((card) => (
+              <ListItem
+                key={card.cardId}
+                className={classes.listItemCompactView}
+              >
+                <Grid container>
+                  <Grid item xs={6}>
+                    {card.data.side_one}
+                  </Grid>
+                  <Grid item xs>
+                    {card.data.side_two}
+                  </Grid>
+                </Grid>
+              </ListItem>
+            ))}
+          </List>
+        </>
+      );
+    } else {
+      return (
+        <>
+          {toolbar()}
           <List>
             {cards.map((card) => (
               <ListItem key={card.cardId} className={classes.listItemCardView}>
@@ -112,9 +165,9 @@ const DeckView = ({ setId }) => {
               </ListItem>
             ))}
           </List>
-        )}
-      </>
-    );
+        </>
+      );
+    }
   } else {
     return (
       <>

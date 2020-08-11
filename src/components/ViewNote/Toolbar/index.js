@@ -29,25 +29,16 @@ const useStyles = makeStyles({
   },
 });
 
+/*
+The ViewNoteToolbar component manages the toolbar buttons and also keeps state on which workspace (i.e. tool) is currently selected
+
+As it stands now, the Workspace component is a child of ViewNoteToolbar
+*/
 const ViewNoteToolbar = ({ currentTextSelected }) => {
   const [currentWorkspace, setCurrentWorkspace] = useState(
     WORKSPACES.INFO_WORKSPACE
   );
   const [noteAndCardsState, dispatchNoteAndCards] = useNoteAndCards();
-
-  useEffect(() => {
-    const noteShouldBeEditable = (bool) => {
-      dispatchNoteAndCards({
-        type: NOTE_AND_CARDS_ACTION.UPDATE_NOTE_IS_EDITABLE,
-        payload: bool,
-      });
-    };
-    if (currentWorkspace === WORKSPACES.EDITNOTE_WORKSPACE) {
-      noteShouldBeEditable(true);
-    } else {
-      noteShouldBeEditable(false);
-    }
-  }, [currentWorkspace]);
 
   const onToolClicked = (e) => {
     if (currentWorkspace === e.currentTarget.name) {

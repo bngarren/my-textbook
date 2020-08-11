@@ -13,7 +13,7 @@ const useStyles = makeStyles({
   drawerPaper: {
     top: "15vh",
     width: drawerWidth,
-    padding: "0 3px",
+    padding: "0 10px 0 2px",
     borderLeft: "none",
     borderTop: "5px solid #ff5722",
   },
