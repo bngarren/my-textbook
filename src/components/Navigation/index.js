@@ -109,7 +109,7 @@ const Navigation = () => {
             {userSession ? (
               <div className={classes.rightContent}>
                 <IconButton onClick={handleMenu} label="test">
-                  <AccountCircle fontSize="large" />
+                  <AccountCircle />
                 </IconButton>
                 {user && (
                   <Typography variant="body1" className={classes.usernameText}>

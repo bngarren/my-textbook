@@ -18,9 +18,9 @@ import { addCard, saveNote } from "../components/Firebase";
 
 /* An enum that formalizes the different action types that can be called with dispatch*/
 export const NOTE_AND_CARDS_ACTION = Object.freeze({
-  ADD_CARD: "addCard",
+  CARD_ADDED: "cardAdded",
   UPDATE_NOTE_ON_CLIENT: "updateNoteOnClient",
-  SAVE_NOTE: "saveNote",
+  NOTE_SAVED: "noteSaved",
 });
 
 /* These are the data types that the context will carry, initialized to null to start*/
@@ -34,7 +34,8 @@ const initialNullState = {
   noteOnClient: "",
   noteIsSynced: true,
   lastSaved: null,
-  saveNoteCallback: (f) => f,
+  noteSavedCallback: (f) => f,
+  cardAddedCallback: (f) => f,
 };
 
 // create the context
@@ -62,28 +63,8 @@ export const NoteAndCardsContextProvider = ({
 // the reducer function implements the action types
 const Reducer = (state, action) => {
   switch (action.type) {
-    case NOTE_AND_CARDS_ACTION.ADD_CARD:
-      addCard(state.userId, state.setId, {
-        side_one: action.payload.cardData.side_one,
-        side_two: action.payload.cardData.side_two,
-      })
-        .then(() => {
-          if (
-            action.payload.callback &&
-            typeof action.payload.callback === "function"
-          ) {
-            action.payload.callback(true);
-          }
-        })
-        .catch((e) => {
-          console.error(`useNoteAndCards.js: Failed to addCard: ${e.message}`);
-          if (
-            action.payload.callback &&
-            typeof action.payload.callback === "function"
-          ) {
-            action.payload.callback(false);
-          }
-        });
+    case NOTE_AND_CARDS_ACTION.CARD_ADDED:
+      state.cardAddedCallback();
       return state;
     case NOTE_AND_CARDS_ACTION.UPDATE_NOTE_ON_CLIENT:
       return {
@@ -92,19 +73,14 @@ const Reducer = (state, action) => {
         noteIsSynced: false,
       };
 
-    case NOTE_AND_CARDS_ACTION.SAVE_NOTE:
-      saveNote(state.noteId, state.setId, action.payload)
-        .then(() => {
-          state.saveNoteCallback();
-          return {
-            ...state,
-            noteIsSynced: true,
-          };
-        })
-        .catch((e) => {
-          console.error(`useNoteAndCards.js: Failed to saveNote: ${e.message}`);
-        });
-      return state;
+    case NOTE_AND_CARDS_ACTION.NOTE_SAVED:
+      state.noteSavedCallback();
+      return {
+        ...state,
+        noteIsSynced: true,
+        lastSaved: action.payload,
+      };
+
     default:
       return state;
   }

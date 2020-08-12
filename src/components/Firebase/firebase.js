@@ -371,20 +371,25 @@ export const saveNote = async (noteId, setId, noteData) => {
     writeableNoteData = { title: title };
   }
 
-  //ensure atomicity
+  let last_saved;
+  //ensure atomicity  NOT SURE WE NEED TRANSACTION HERE??
   try {
     await db.runTransaction(async (t) => {
       const ref_notesDoc = db.collection(ROOT_COLLECTION.NOTES).doc(noteId);
 
-      t.update(ref_notesDoc, {
+      /* create the timestamp here rather than have the server do it so we can save
+      the value and pass it as the return value*/
+      last_saved = firebase.firestore.Timestamp.now();
+
+      await t.update(ref_notesDoc, {
         ...writeableNoteData,
-        last_modified: firebase.firestore.FieldValue.serverTimestamp(),
+        last_modified: last_saved,
       });
     });
   } catch (error) {
     throw new Error("Transaction failed for saveNote: ", error.message);
   }
-  return true;
+  return last_saved;
 };
 
 /**

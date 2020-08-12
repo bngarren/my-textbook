@@ -9,7 +9,7 @@ import {
   useNoteAndCards,
   NOTE_AND_CARDS_ACTION,
 } from "../../../hooks/useNoteAndCards";
-import { findAllByDisplayValue } from "@testing-library/react";
+import { addCard } from "../../Firebase";
 
 export const WORKSPACES = Object.freeze({
   INFO_WORKSPACE: "infoWorkspace",
@@ -36,20 +36,25 @@ const Workspace = ({
   const onWorkspaceSaveCard = (cardData, specificWorkspaceCallback) => {
     setIsLoading(true);
 
-    //this dispatch function takes it own callback function as a parameter
-    dispatchNoteAndCards({
-      type: NOTE_AND_CARDS_ACTION.ADD_CARD,
-      payload: {
-        cardData: cardData,
-        callback: (result) => {
-          if (typeof specificWorkspaceCallback === "function") {
-            // this is the callback provided by the specific workspace so it can know that the addCard is complete
-            specificWorkspaceCallback(result);
-          }
-          setIsLoading(false);
-        },
-      },
-    });
+    /* the cardData parameter should be an object that matches the form that
+    the firebase function addCard expects*/
+    addCard(noteAndCardsState.userId, noteAndCardsState.setId, cardData)
+      .then((res) => {
+        // let's the context know a card was added, i.e. it can fire a callback to another component
+        dispatchNoteAndCards({
+          type: NOTE_AND_CARDS_ACTION.CARD_ADDED,
+        });
+
+        if (typeof specificWorkspaceCallback === "function") {
+          // this is the callback provided by the specific workspace so it can know that the addCard is complete
+          specificWorkspaceCallback(res);
+        }
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error(`Workspace.js: Failed to add new Card: ${error.message}`);
+        setIsLoading(false);
+      });
   };
 
   const renderWorkspace = (workspace) => {

@@ -13,6 +13,7 @@ import CloudDoneIcon from "@material-ui/icons/CloudDone";
 import SaveIcon from "@material-ui/icons/Save";
 import IconButton from "@material-ui/core/IconButton";
 
+import { saveNote } from "../../Firebase";
 import {
   useNoteAndCards,
   NOTE_AND_CARDS_ACTION,
@@ -76,10 +77,20 @@ const QuillEditor = ({ initialValue, readOnly = false }) => {
   };
 
   const onSave = () => {
-    dispatchNoteAndCards({
-      type: NOTE_AND_CARDS_ACTION.SAVE_NOTE,
-      payload: { content: value },
-    });
+    saveNote(noteAndCardsState.noteId, noteAndCardsState.setId, {
+      content: value,
+    })
+      .then((timestamp) => {
+        // should give us the lastSaved timestamp back
+        console.debug("QuillEditor.js: Note successfully saved.");
+        dispatchNoteAndCards({
+          type: NOTE_AND_CARDS_ACTION.NOTE_SAVED,
+          payload: timestamp,
+        });
+      })
+      .catch((error) => {
+        console.error(`QuillEditor.js: Failed to save note: ${error.message}`);
+      });
   };
 
   return (

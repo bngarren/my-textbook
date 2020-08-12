@@ -176,9 +176,9 @@ const NoteView = () => {
     return () => document.removeEventListener("mouseup", onMouseUp);
   }, [onMouseUp]);
 
-  const onSavedNote = () => {
-    //setRefresh(!refresh);
-  };
+  const onNoteSaved = () => {};
+
+  const onCardAdded = () => {};
 
   const onToggleToolDrawer = () => {
     setToolDrawerOpen(!toolDrawerOpen);
@@ -226,7 +226,8 @@ const NoteView = () => {
                 noteOnClient: noteInDb.content,
                 noteIsSynced: true,
                 lastSaved: noteInDb.last_modified,
-                saveNoteCallback: onSavedNote,
+                noteSavedCallback: onNoteSaved,
+                cardAddedCallback: onCardAdded,
               }}
             >
               <Container
