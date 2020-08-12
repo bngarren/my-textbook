@@ -1,14 +1,26 @@
 import React, { useState } from "react";
 
+import { makeStyles } from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
 import TextField from "@material-ui/core/TextField";
 import IconButton from "@material-ui/core/IconButton";
-import NoteAddIcon from "@material-ui/icons/NoteAdd";
+import CheckIcon from "@material-ui/icons/Check";
 import { InputAdornment } from "@material-ui/core";
 
 import { addNote } from "../../Firebase";
 
+const useStyles = makeStyles({
+  textfieldRoot: {},
+  checkIconButton: {
+    padding: "3px",
+  },
+  checkIcon: {
+    color: "green",
+  },
+});
+
 const AddNoteForm = ({ user, setId, onNewNoteAdded = (f) => f }) => {
+  const classes = useStyles();
   const [value, setValue] = useState("");
 
   const handleChange = (e) => {
@@ -44,26 +56,30 @@ const AddNoteForm = ({ user, setId, onNewNoteAdded = (f) => f }) => {
 
   return (
     <>
-      <form onSubmit={handleSubmit}>
-        <FormControl error>
-          <TextField
-            variant="outlined"
-            label="Add Note"
-            value={value}
-            onChange={handleChange}
-            size="small"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton type="submit">
-                    {value.length > 0 && <NoteAddIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-        </FormControl>
-      </form>
+      <FormControl error>
+        <TextField
+          variant="outlined"
+          value={value}
+          placeholder="Title"
+          onChange={handleChange}
+          size="small"
+          className={classes.textfieldRoot}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={handleSubmit}
+                  className={classes.checkIconButton}
+                >
+                  {value.length > 0 && (
+                    <CheckIcon className={classes.checkIcon} />
+                  )}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </FormControl>
     </>
   );
 };

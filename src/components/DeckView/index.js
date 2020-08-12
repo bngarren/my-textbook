@@ -9,6 +9,7 @@ import Button from "@material-ui/core/Button";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
 import ViewStreamIcon from "@material-ui/icons/ViewStream";
 import Tooltip from "@material-ui/core/Tooltip";
+import Typography from "@material-ui/core/Typography";
 
 import CardView from "./CardView";
 import Loading from "../Loading";
@@ -16,6 +17,11 @@ import Loading from "../Loading";
 import { getDocFromSetCards, removeCard } from "../Firebase";
 
 const useStyles = makeStyles({
+  deckViewToolbar: {
+    justifyContent: "space-between",
+    minHeight: "36px",
+    marginBottom: "36px",
+  },
   listItemCardView: {
     padding: "0px 2px",
     marginBottom: "20px",
@@ -107,25 +113,39 @@ const DeckView = ({ setId }) => {
 
   const toolbar = () => {
     return (
-      <Toolbar>
-        <Tooltip
-          title={compactView ? "Switch to Card View" : "Switch to Compact View"}
-        >
-          <Button
-            onClick={() => {
-              setCompactView(!compactView);
-            }}
+      <Toolbar className={classes.deckViewToolbar}>
+        <div>
+          <Typography variant="subtitle2">
+            {deckInfo.cards_count}{" "}
+            {`card${deckInfo.cards_count > 1 ? "s" : ""}`}
+          </Typography>
+        </div>
+        <div>
+          <Tooltip
+            title={
+              compactView ? "Switch to Card View" : "Switch to Compact View"
+            }
           >
-            {compactView ? <ViewStreamIcon alt="test" /> : <ViewHeadlineIcon />}
-          </Button>
-        </Tooltip>
+            <Button
+              onClick={() => {
+                setCompactView(!compactView);
+              }}
+            >
+              {compactView ? (
+                <ViewStreamIcon alt="test" />
+              ) : (
+                <ViewHeadlineIcon />
+              )}
+            </Button>
+          </Tooltip>
+        </div>
       </Toolbar>
     );
   };
 
   if (!isLoading) {
     if (cards == null) {
-      return;
+      return <></>;
     }
 
     if (compactView) {

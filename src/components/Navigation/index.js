@@ -27,6 +27,8 @@ const useStyles = makeStyles({
   },
   appBarRoot: {
     background: "transparent",
+    borderBottom: "2px solid black",
+    boxShadow: "none",
   },
   logo: {
     minWidth: "0",

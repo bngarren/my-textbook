@@ -35,7 +35,6 @@ const initialNullState = {
   noteIsSynced: true,
   lastSaved: null,
   saveNoteCallback: (f) => f,
-  mdParser: null,
 };
 
 // create the context

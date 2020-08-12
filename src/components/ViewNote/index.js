@@ -177,7 +177,7 @@ const NoteView = () => {
   }, [onMouseUp]);
 
   const onSavedNote = () => {
-    setRefresh(!refresh);
+    //setRefresh(!refresh);
   };
 
   const onToggleToolDrawer = () => {

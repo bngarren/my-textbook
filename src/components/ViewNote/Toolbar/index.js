@@ -36,7 +36,7 @@ As it stands now, the Workspace component is a child of ViewNoteToolbar
 */
 const ViewNoteToolbar = ({ currentTextSelected }) => {
   const [currentWorkspace, setCurrentWorkspace] = useState(
-    WORKSPACES.INFO_WORKSPACE
+    WORKSPACES.DEFINITION_WORKSPACE
   );
   const [noteAndCardsState, dispatchNoteAndCards] = useNoteAndCards();
 

@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Box from "@material-ui/core/Box";
+import Fade from "@material-ui/core/Fade";
 
 const useStyles = makeStyles({
   root: {
@@ -15,15 +16,15 @@ const useStyles = makeStyles({
   },
   relative: {
     position: "relative",
-    transform: "translate(50%, 50%)",
-    height: "200px",
+    transform: "translate(45%, 50%)",
+    height: "50%",
   },
   smallGrey: {
     color: "grey",
   },
 });
 
-const Loading = ({ type, relative = false }) => {
+const Loading = ({ type, relative = false, delay = true }) => {
   const classes = useStyles();
 
   const rootClasses = clsx(
@@ -40,13 +41,23 @@ const Loading = ({ type, relative = false }) => {
   const size = type === "smallGrey" ? 40 : 50;
 
   return (
-    <Box className={rootClasses}>
-      <CircularProgress
-        color="primary"
-        size={size}
-        className={progressClasses}
-      />
-    </Box>
+    <Fade
+      in
+      unmountOnExit
+      style={{
+        transitionDelay: delay ? "300ms" : "0ms",
+      }}
+    >
+      <Box className={rootClasses}>
+        <CircularProgress
+          color="primary"
+          size={size}
+          className={progressClasses}
+          disableShrink
+          thickness={4}
+        />
+      </Box>
+    </Fade>
   );
 };
 

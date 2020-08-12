@@ -47,33 +47,36 @@ const DefinitionWorkspace = ({
       return;
     }
 
-    switch (inputBox) {
-      case "term":
-        shouldAddend
-          ? setTermValue((value) => value + "\n" + currentTextSelected)
-          : setTermValue(currentTextSelected);
-        break;
-      case "definition":
-        shouldAddend
-          ? setDefinitionValue((value) => value + "\n" + currentTextSelected)
-          : setDefinitionValue(currentTextSelected);
-        break;
-      default:
-        return;
+    const handleAddend = (value) => {
+      if (value.trim() === "") {
+        return currentTextSelected;
+      } else {
+        return value + "\n" + currentTextSelected;
+      }
+    };
+
+    if (inputBox === "term") {
+      if (shouldAddend) {
+        setTermValue((value) => handleAddend(value));
+      } else {
+        setTermValue(currentTextSelected);
+      }
+    } else if (inputBox === "definition") {
+      if (shouldAddend) {
+        setDefinitionValue((value) => handleAddend(value));
+      } else {
+        setDefinitionValue(currentTextSelected);
+      }
     }
   };
 
   /* ------ HOT KEYS ---- */
-  useHotkeys("q", () => handleHotkeyFor("term", false), [currentTextSelected]);
-  useHotkeys("alt+q", () => handleHotkeyFor("term", true), [
+  useHotkeys("q", () => handleHotkeyFor("term", true), [currentTextSelected]);
+
+  useHotkeys("w", () => handleHotkeyFor("definition", true), [
     currentTextSelected,
   ]);
-  useHotkeys("w", () => handleHotkeyFor("definition", false), [
-    currentTextSelected,
-  ]);
-  useHotkeys("alt+w", () => handleHotkeyFor("definition", true), [
-    currentTextSelected,
-  ]);
+
   /* -------------------------- */
 
   useEffect(() => {

@@ -35,6 +35,10 @@ const useStyles = makeStyles({
   gridItemDeckView: {
     //background: "rgba(235, 218, 157, 0.1)",
   },
+  sectionHeading: {
+    fontVariantCaps: "all-small-caps",
+    borderBottom: "3px solid black",
+  },
 });
 
 const SetPage = () => {
@@ -50,15 +54,21 @@ const SetPage = () => {
 
     return (
       <div className={classes.root}>
-        <Typography variant="h6">
+        <Typography variant="h4">
           {userClient.activeSet && userClient.activeSet.title}
         </Typography>
         <br />
-        <Grid container className={classes.gridContainerRoot}>
+        <Grid container className={classes.gridContainerRoot} spacing={2}>
           <Grid item className={classes.gridItemNotesView} lg={4} xs={12}>
+            <Typography variant="h5" className={classes.sectionHeading}>
+              Notes
+            </Typography>
             <NotesView setId={setId} user={user} />
           </Grid>
           <Grid item className={classes.gridItemDeckView} lg xs>
+            <Typography variant="h5" className={classes.sectionHeading}>
+              Deck
+            </Typography>
             <DeckView setId={setId} />
           </Grid>
         </Grid>

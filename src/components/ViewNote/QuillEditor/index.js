@@ -82,29 +82,6 @@ const QuillEditor = ({ initialValue, readOnly = false }) => {
     });
   };
 
-  /*   const getTimeSinceLastSaved = () => {
-    const lastSaved = noteAndCardsState.lastSaved.toDate();
-    const now = new Date();
-    const diff = new Date(now - lastSaved);
-
-    const secs = diff / 1000.0;
-    const mins = secs / 60.0;
-    const hrs = mins / 60.0;
-    const days = hrs / 24.0;
-
-    if (days >= 1) {
-      return lastSaved.toLocaleDateString();
-    } else if (hrs >= 1) {
-      const suffix = hrs < 2 ? "" : "s";
-      return `${Math.floor(hrs)} hour${suffix} ago`;
-    } else if (mins >= 1) {
-      const suffix = mins < 2 ? "" : "s";
-      return `${Math.floor(mins)} minute${suffix} ago`;
-    } else {
-      return `1 minute ago`;
-    }
-  }; */
-
   return (
     <>
       {!readOnly && (
@@ -130,14 +107,14 @@ const QuillEditor = ({ initialValue, readOnly = false }) => {
         }}
         placeholder={value === "" ? "Start you new note..." : ""}
       >
-        <Paper
+        {/* <Paper
           className={clsx(
             classes.editorPaper,
             { "ql-readOnly": readOnly },
             { [classes.editorPaperReadOnly]: readOnly }
           )}
           elevation={1}
-        ></Paper>
+        ></Paper> */}
       </ReactQuill>
     </>
   );
