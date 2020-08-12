@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/my-textbook/static/css/main.d45fd675.chunk.css",
+    "main.js": "/my-textbook/static/js/main.6ef096c5.chunk.js",
+    "main.js.map": "/my-textbook/static/js/main.6ef096c5.chunk.js.map",
+    "runtime-main.js": "/my-textbook/static/js/runtime-main.ea75e5c0.js",
+    "runtime-main.js.map": "/my-textbook/static/js/runtime-main.ea75e5c0.js.map",
+    "static/css/2.4bc322ce.chunk.css": "/my-textbook/static/css/2.4bc322ce.chunk.css",
+    "static/js/2.13fe9ae2.chunk.js": "/my-textbook/static/js/2.13fe9ae2.chunk.js",
+    "static/js/2.13fe9ae2.chunk.js.map": "/my-textbook/static/js/2.13fe9ae2.chunk.js.map",
+    "index.html": "/my-textbook/index.html",
+    "precache-manifest.fdc4469fd1ef21990244eda940b23706.js": "/my-textbook/precache-manifest.fdc4469fd1ef21990244eda940b23706.js",
+    "service-worker.js": "/my-textbook/service-worker.js",
+    "static/css/2.4bc322ce.chunk.css.map": "/my-textbook/static/css/2.4bc322ce.chunk.css.map",
+    "static/css/main.d45fd675.chunk.css.map": "/my-textbook/static/css/main.d45fd675.chunk.css.map",
+    "static/js/2.13fe9ae2.chunk.js.LICENSE.txt": "/my-textbook/static/js/2.13fe9ae2.chunk.js.LICENSE.txt",
+    "static/media/index.css": "/my-textbook/static/media/roboto-vietnamese-400-normal.a8be5b46.woff2"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.ea75e5c0.js",
+    "static/css/2.4bc322ce.chunk.css",
+    "static/js/2.13fe9ae2.chunk.js",
+    "static/css/main.d45fd675.chunk.css",
+    "static/js/main.6ef096c5.chunk.js"
+  ]
+}
