@@ -11,3 +11,7 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.MuiContainer-maxWidthLg {
+  max-width: 1400px !important;
+}

@@ -420,7 +420,7 @@ export const addCard = async (userId, setId, cardData) => {
   // Update this setId's doc in the 'set-card' collection
   const ref_setCardsDoc = db.collection(ROOT_COLLECTION.SET_CARDS).doc(setId);
 
-  return ref_setCardsDoc.update({
+  return await ref_setCardsDoc.update({
     [`cards.${cardId}`]: {
       side_one: side_one,
       side_two: side_two,

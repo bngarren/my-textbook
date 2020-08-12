@@ -12,6 +12,7 @@ import Paper from "@material-ui/core/Paper";
 import CloudDoneIcon from "@material-ui/icons/CloudDone";
 import SaveIcon from "@material-ui/icons/Save";
 import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
 
 import { saveNote } from "../../Firebase";
 import {
@@ -99,9 +100,13 @@ const QuillEditor = ({ initialValue, readOnly = false }) => {
         <div className={classes.syncStatus}>
           <LastSaveTime date={noteAndCardsState.lastSaved.toDate()} />
           {noteAndCardsState.noteIsSynced ? (
-            <CloudDoneIcon className={classes.cloudIcon} />
+            <Tooltip title="Note is synced">
+              <CloudDoneIcon className={classes.cloudIcon} />
+            </Tooltip>
           ) : (
-            <SaveIcon className={classes.saveIcon} onClick={onSave} />
+            <Tooltip title="Save note">
+              <SaveIcon className={classes.saveIcon} onClick={onSave} />
+            </Tooltip>
           )}
         </div>
       )}

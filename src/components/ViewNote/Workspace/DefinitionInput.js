@@ -15,7 +15,9 @@ const useStyles = makeStyles({
     transition: "background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
   },
   outlinedInput: {
-    padding: "15px 12px 15px 8px",
+    padding: "10px 3px 10px 3px",
+    borderRadius: "2px",
+
     "&$focused $notchedOutlineActive": {
       border: "1px solid rgba(15, 15, 15, 0.6)",
       borderBottom: "2px solid rgba(137, 137, 137, 0.7)",
@@ -37,7 +39,7 @@ const useStyles = makeStyles({
   },
   focused: {},
   inputAdornmentRoot: {
-    transform: "translate(-15px, -30px)",
+    transform: "translate(-18px, -65px)",
   },
 });
 
@@ -65,15 +67,14 @@ export default function DefinitionInput({
         label={label}
         className={className}
         multiline
-        rows={5}
-        rowsMax={5}
+        rows={6}
+        rowsMax={6}
         variant="outlined"
         inputProps={{
           style: {
             textAlign: "center",
-            paddingTop: "20px",
-            paddingBottom: "10px",
-            fontWeight: "bold",
+            padding: "20px 10px 10px 10px",
+            marginRight: "-45px",
           },
         }}
         InputLabelProps={{
@@ -92,7 +93,7 @@ export default function DefinitionInput({
               : classes.notchedOutlineInactive,
             focused: classes.focused,
           },
-          startAdornment: (
+          endAdornment: (
             <InputAdornment
               position="end"
               className={classes.inputAdornmentRoot}

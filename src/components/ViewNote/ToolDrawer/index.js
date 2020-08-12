@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 
-import Hidden from "@material-ui/core/Hidden";
 import Drawer from "@material-ui/core/Drawer";
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -13,9 +12,11 @@ const useStyles = makeStyles({
   drawerPaper: {
     top: "15vh",
     width: drawerWidth,
-    padding: "0 10px 0 2px",
+    padding: "0 15px 0 2px",
     borderLeft: "none",
-    borderTop: "5px solid #ff5722",
+  },
+  toolDrawerContainer: {
+    borderTop: "1px solid #f2f2f2",
   },
 });
 
@@ -32,7 +33,7 @@ const ToolDrawer = ({ open, children }) => {
       anchor="right"
       open={open}
     >
-      {children}
+      <div className={classes.toolDrawerContainer}>{children}</div>
     </Drawer>
   );
 };

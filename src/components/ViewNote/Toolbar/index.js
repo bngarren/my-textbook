@@ -16,16 +16,26 @@ import {
 const useStyles = makeStyles({
   rootToolbar: {
     justifyContent: "flex-start",
-    borderRadius: "4px",
     marginBottom: "30px",
+    borderBottom: "1px dashed #aaa",
+    minHeight: "auto",
+    padding: "5px 0px",
   },
   buttonTool: {
-    border: "1px solid grey",
+    background: "#e6e6e6",
     marginRight: "3px",
+    padding: "3px 6px",
+    borderRadius: "3px",
   },
-  buttonInfo: {},
+  buttonInfo: {
+    padding: "3px 6px",
+  },
   buttonSelected: {
-    borderBottom: "3px solid #1c1c1c",
+    background: "#ff5722",
+    color: "white",
+    "&:hover": {
+      background: "#ffaa90",
+    },
   },
 });
 

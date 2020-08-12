@@ -25,6 +25,10 @@ const useStyles = makeStyles({
   listItemCardView: {
     padding: "0px 2px",
     marginBottom: "20px",
+    whiteSpace: "pre-wrap",
+  },
+  listItemCompactView: {
+    whiteSpace: "pre-wrap",
   },
 });
 

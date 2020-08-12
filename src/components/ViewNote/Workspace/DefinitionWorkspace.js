@@ -175,7 +175,10 @@ const DefinitionWorkspace = ({
           <SaveButton isEnabled={readyToSave} onClick={onSave} />
         </Grid>
         <Grid item>
-          <FlipButton isEnabled={true} onClick={onFlip} />
+          <FlipButton
+            isEnabled={termValue.trim() !== "" || definitionValue.trim() !== ""}
+            onClick={onFlip}
+          />
         </Grid>
       </Grid>
     </Grid>
