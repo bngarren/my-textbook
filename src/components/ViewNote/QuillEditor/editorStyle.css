@@ -1,5 +1,4 @@
 .quill {
-  margin-top: 1em;
 }
 
 .ql-container {
@@ -17,6 +16,10 @@
     0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
 }
 
+.ql-toolbar button:hover .ql-stroke {
+  stroke: #03a9f4 !important;
+}
+
 .ql-editor {
   min-height: 50vh;
   padding: 15px 25px 50px 25px;
@@ -24,4 +27,11 @@
 
 .ql-readOnly {
   border: none !important;
+}
+
+.ql-customIcon {
+  fill: #444444;
+}
+.ql-customIcon:hover {
+  fill: #03a9f4;
 }

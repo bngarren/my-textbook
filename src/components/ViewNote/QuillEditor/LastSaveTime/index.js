@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 
+import Typography from "@material-ui/core/Typography";
+
 const LastSaveTime = ({ date }) => {
   const [dateTime, setDateTime] = useState({
     date: "",
@@ -16,7 +18,9 @@ const LastSaveTime = ({ date }) => {
 
   return (
     <span style={{ fontVariant: "proportional-nums", fontStyle: "italic" }}>
-      Last saved: {dateTime.date} at {dateTime.time}
+      <Typography variant="subtitle2">
+        Last saved: {dateTime.date} at {dateTime.time}
+      </Typography>
     </span>
   );
 };
