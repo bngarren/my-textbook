@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useHistory } from "react-router-dom";
 
-import MarkdownIt from "markdown-it";
 import clsx from "clsx";
 
 import * as ROUTES from "../../constants/routes";
